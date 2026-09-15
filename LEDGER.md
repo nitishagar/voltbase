@@ -9,21 +9,21 @@
 
 ## 1. Status
 
-- Current stage: S8
-- Stage status: PASSED
-- Last verified commit: 7c468e0 (S7: add end-to-end suite, budgets, and docs)
-- Next action: Commit `S8: pass clean-clone audit`, then run S13 preconditions (verify stage=8, gh auth, CF token/account, remote empty, tree clean).
-- Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S8-VERIFY (PASS: fresh-clone 130/130 + VERIFY OK stage=8, mutation STAGE 8→999 FAIL then green, sec clean, kill-4 no-trigger, remote empty)
+- Current stage: S13
+- Stage status: PARTIAL (pushed private; deploy blocked on credentials)
+- Last verified commit: 72477be (S8: pass clean-clone audit)
+- Next action: Provide `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (via env, never in git), then: `wrangler secret` + `wrangler deploy` + public flip + Pages check + tag `v0.1.0`. See docs/ledger/S13-partial.md §BLOCKED.
+- Blocked on: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (both absent); OCM_API_KEY value (live check); branch protection needs Pro/public (HTTP 403 while private-free)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S13-VERIFY r2 (PASS-PARTIAL: VERIFY OK stage=8, 130/130, remote origin private, dry-run exit 0, no flip/tag/deploy)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S8 PASSED (fresh-clone install+verify+e2e green, 8 tasks re-verified with citations, ADR↔code + spec↔route full, sec scrub clean, kill-4 no-trigger); VERIFY OK stage=8, 130/130 tests. Status READY_FOR_CREDENTIALS.
+- What exists: S0–S8 PASSED (VERIFY OK stage=8, 130/130 tests); S13 PARTIAL — repo `nitishagar/voltbase` PRIVATE on origin, master pushed, dry-run exit 0; NO flip/tag/deploy/publish.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request; clone was file-local /tmp/voltbase-S8-audit.
-- Gotchas: private repo ⇒ no publish/deploy until S13; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e.
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call (all S13+ ingest-time); S13 next.
+- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request; S8 clone was file-local.
+- Gotchas: repo now PRIVATE on origin (not empty); `private:true` stays; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e; S13 stopped at credential wall (no invention).
+- Open: CF token/account (deploy), OCM key value (live check), GITHUB_TOKEN+flip (Pages), protection (Pro/public); LU 2nd-set / PT Mobi.e / OCM-keyed-call (ingest-time).
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -38,8 +38,8 @@
 | S5 | PASSED | builder | verifier r1 PASS | 8082d1d | 102 | docs/ledger/S5-verify-r1.md |
 | S6 | PASSED | builder | verifier r1 PASS | f41aafc | 122 | docs/ledger/S6-verify-r1.md |
 | S7 | PASSED | builder | verifier r1 PASS | 7c468e0 | 130 | docs/ledger/S7-verify-r1.md |
-| S8 | PASSED | auditor (fresh clone) | verifier r1 PASS | pending `S8: pass clean-clone audit` | 130 | docs/ledger/S8-audit.md |
-| S13 | NOT_STARTED | | | | | |
+| S8 | PASSED | auditor (fresh clone) | verifier r1 PASS | 72477be | 130 | docs/ledger/S8-audit.md |
+| S13 | PARTIAL | builder | verifier r1 BLOCKED (gate-trip) → r2 PASS-PARTIAL | pending `S13: private push, deploy blocked` | 130 | docs/ledger/S13-partial.md |
 
 ## 4. Decisions
 
@@ -53,24 +53,26 @@
 
 - Node: v22.23.2 npm 10.9.8 | gh: nitishagar (scopes admin:public_key, gist, read:org, repo; verified 2026-09-14)
 - Registry facts 2026-09-14 (`npm view`): hono 4.13.7, itty-router 5.0.24, wrangler 4.131.2, @cloudflare/vitest-plugin 1.1.9 (peer vitest ^4.1), vitest 4.1.11 (5.0.0 unsupported by plugin), typescript 7.0.2 latest / 6.0.3 last usable with typescript-eslint 8.70.0, @modelcontextprotocol/sdk 1.30.0, agents 0.23.0, astro 7.3.2, pagefind 1.5.2, zod 4.6.5, eslint 10.10.0
-- Local: `~/repos/learn/voltbase` (to create); remote: none until S13
-- Vars/secrets/bindings: docs/env.md (S0); credentials present: none needed until S13 (Cloudflare token/account, npm account optional)
+- Local: `~/repos/learn/voltbase`; remote: `origin → github.com/nitishagar/voltbase` (PRIVATE, pushed S13-partial; no flip until deploy ready)
+- Vars/secrets/bindings: docs/env.md (S0); credentials present: gh nitishagar only; ABSENT: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OCM_API_KEY value (see S13-partial BLOCKED)
 
 ## 6. Open issues
 
 | # | Found in | Description | Severity | Status |
 |---|---|---|---|---|
-| 1 | PLAN_VALIDATION W1 | AFIR poll cadence vs KV/D1 write caps unproven | Medium | open → S0.4 |
-| 2 | PLAN_VALIDATION W2 | npm-vs-pnpm deviation needs ADR-001 rationale | Low | open → S0.5 |
-| 3 | PLAN_VALIDATION W3 | e2e tool (Playwright vs light) undecided | Low | open → S7 |
+| 1 | PLAN_VALIDATION W1 | AFIR poll cadence vs KV/D1 write caps unproven | Medium | CLOSED (ADR-002 W1 math + S6 80% guard + cut-to-artifact, verified S6) |
+| 2 | PLAN_VALIDATION W2 | npm-vs-pnpm deviation needs ADR-001 rationale | Low | CLOSED (ADR-001 §npm, verified S0) |
+| 3 | PLAN_VALIDATION W3 | e2e tool (Playwright vs light) undecided | Low | CLOSED (S7 lightweight decision, verified S7) |
 | 4 | research pass 6 | NL NDW licence: CC0 site-wide + dataset page checked 2026-09-14 (nothing contrary); S0 eyeballs page at ingest time | Low | research-closed → S0.4 confirm |
 | 5 | research pass 6 | DE Mobilithek consumer model VERIFIED (registration + approval + mTLS X.509; DATEX II mandatory from 2026-04-14); stays second-wave on evidence | Low | research-closed → S0.4 confirm |
 | 6 | PLAN_VALIDATION W6 | Fly/Render/Oracle facts not re-verified (hosts ruled out) | Low | open (only if host decision reopens) |
-| 7 | research pass 2 | ODbL Collective-vs-Derivative decision for merged index (ADR-003) | High | open → S0.5 |
-| 8 | research pass 2 | Toolchain pins: vitest 4.1.x, TS ≤6.0.x, vitest-plugin not pool-workers | Medium | open → S0.5/S1 |
-| 9 | research pass 4 | S5–S8 briefs need explicit Depends/Extra-gates/Files-owned (PLAN_VALIDATION W7) | Low | open → S0 |
-| 10 | research pass 6 | LU second multi-operator DATEX II set is "License Not Specified" — clear licence before ingesting beyond CC0 Chargy KML | Medium | open → S0.4/ADR-002 |
+| 7 | research pass 2 | ODbL Collective-vs-Derivative decision for merged index (ADR-003) | High | CLOSED (ADR-003 Collective partitioned, verified S0+S2) |
+| 8 | research pass 2 | Toolchain pins: vitest 4.1.x, TS ≤6.0.x, vitest-plugin not pool-workers | Medium | CLOSED (package-check + S1 exact pins 11/11, verified S1) |
+| 9 | research pass 4 | S5–S8 briefs need explicit Depends/Extra-gates/Files-owned (PLAN_VALIDATION W7) | Low | CLOSED (stack.md S5–S8 lines, verified S0) |
+| 10 | research pass 6 | LU second multi-operator DATEX II set is "License Not Specified" — clear licence before ingesting beyond CC0 Chargy KML | Medium | open → ingest-time (ADR-002 ticket; S13+ feed onboarding) |
 | 11 | research pass 6 | OCM spec URL re-pinned (ocm-docs raw + /v3/openapi); D1 2026-09-01 date primary-sourced; NAPSPAN pricing re-pinned; FR canonical URL + NAP beta noted | Low | research-closed → S0 cites new URLs |
+| 12 | S13 run | Real `wrangler deploy` needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (both absent); live OCM check needs OCM_API_KEY value; Pages needs public flip + GITHUB_TOKEN | High | BLOCKED → provide creds (see docs/ledger/S13-partial.md), then deploy+flip+tag v0.1.0 |
+| 13 | S13 run | Branch protection require-CI returns HTTP 403 on private-free plan | Low | BLOCKED (applies on public flip or Pro; recorded in S13-partial.md §2) |
 
 ## 7. Event log (append only; newest last)
 
@@ -92,4 +94,8 @@
 | 2026-09-15T00:00:00Z | S5 | orchestrator-verifier | S5 verify r1 PASS: VERIFY OK stage=5, 102/102 tests (12 new site), dist 20 files 7 pages + pagefind 15592B/7 entries, no closed data, links resolve, DRAFT+DPDP, robots, static, BYOK names-only, pages.yml public-guarded, mutation legal-marker 1-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S6 | orchestrator-verifier | S6 verify r1 PASS: VERIFY OK stage=6, 122/122 tests (20 new), journal-once + rollup exact + stale + 80% guard→UPSTREAM_FAILED+cut, ≤50/≤6/1-cron, null-cache, route+tool live, no bindings, mutation guard-ratio 1-fail then green, sec-review 0 issues, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S7 | orchestrator-verifier | S7 verify r1 PASS: VERIFY OK stage=7, 130/130 tests (6 e2e + 2 unit), bundle FAIL-path + TTFB local OK, release dry-run 12-edits restores tree, arch+runbook present, mutation TTFB 300→1 FAIL then green, remote empty, no publish | PASS | pending |
-| 2026-09-15T00:00:00Z | S8 | orchestrator-verifier | S8 verify r1 PASS: fresh-clone 130/130 + VERIFY OK stage=8, 8 tasks cited, ADR↔code + spec↔route full, sec clean, kill-4 no-trigger, mutation STAGE 8→999 FAIL then green, remote empty → READY_FOR_CREDENTIALS | PASS | pending |
+| 2026-09-15T00:00:00Z | S8 | orchestrator-verifier | S8 verify r1 PASS: fresh-clone 130/130 + VERIFY OK stage=8, 8 tasks cited, ADR↔code + spec↔route full, sec clean, kill-4 no-trigger, mutation STAGE 8→999 FAIL then green, remote empty → READY_FOR_CREDENTIALS | PASS | 72477be |
+| 2026-09-15T00:00:00Z | S13 | builder | S13 partial: repo nitishagar/voltbase created PRIVATE + master pushed (72477be); protection 403 (private-free); wrangler dry-run exit 0 (2118KiB/383KiB gzip); STOP at credential wall (CF token/account absent); banned OK | PARTIAL | — |
+| 2026-09-15T00:00:00Z | S13 | orchestrator-verifier | S13 verify r1 BLOCKED: check-banned FAIL on S13-partial.md literal trailer pattern (builder artifact trips own gate); transport/visibility/dry-run confirmed (private, no tags, dry-run 0, CF names absent) | BLOCKED | — |
+| 2026-09-15T00:00:00Z | S13 | orchestrator | S13 fix: reworded S13-partial.md trailer line to descriptive citation (no literals); check-banned OK + VERIFY OK stage=8 restored | ok | — |
+| 2026-09-15T00:00:00Z | S13 | orchestrator-verifier | S13 verify r2 PASS-PARTIAL: VERIFY OK stage=8, 130/130, banned OK, remote origin private, dry-run exit 0, no flip/tag/deploy; BLOCKED items recorded (CF token/account, OCM key value, flip+Pages, protection) | PASS-PARTIAL | pending |
