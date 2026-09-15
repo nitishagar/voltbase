@@ -2,7 +2,7 @@
 
 > Developer-first open-core tooling for EV charging data — normalisation library, discovery API, and MCP server over open data only.
 
-**Status:** S1 scaffold (stage 1). The Worker serves `/` + `/healthz`; library packages, REST filters, MCP tools, and the docs site land in S2–S7. See [LEDGER.md](./LEDGER.md) for the build handoff log, [docs/stack.md](./docs/stack.md) for the stack contract, and [docs/spec.md](./docs/spec.md) for the spec excerpts.
+**Status:** S0–S8 complete (stage 8). The Worker serves `/` + `/healthz` + `/api/v1/*` + `/mcp`; the docs site is live on GitHub Pages. See [docs/ledger/](./docs/ledger/) for the stage handoff reports — the full `LEDGER.md` build log is maintained locally and intentionally not published — plus [docs/stack.md](./docs/stack.md) for the stack contract and [docs/spec.md](./docs/spec.md) for the spec excerpts.
 
 ## Quickstart
 
