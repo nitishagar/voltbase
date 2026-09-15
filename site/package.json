@@ -1,0 +1,23 @@
+{
+  "name": "@voltbase/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "voltbase landing + docs site — static Pages artifact",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node ./build.mjs",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "check": "npm run build && npm run test"
+  },
+  "devDependencies": {
+    "astro": "7.3.2",
+    "pagefind": "1.5.2",
+    "vitest": "4.1.11"
+  }
+}

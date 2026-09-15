@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  // Worker program: plain Web libs (no node types) — the package tsconfig
+  // keeps types:["node"]; the two global sets conflict, so the worker slice
+  // gets its own program.
+  "compilerOptions": {
+    "lib": ["ES2023", "WebWorker"]
+  },
+  "include": ["./*.ts"]
+}

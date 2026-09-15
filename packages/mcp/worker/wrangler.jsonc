@@ -1,0 +1,14 @@
+{
+  // voltbase Worker config for the packages/mcp suite (mirrors lumen
+  // worker/wrangler.jsonc topology). Same contract as the root wrangler.jsonc:
+  // name voltbase-api, compat date 2026-08-04, nodejs_compat +
+  // global_fetch_strictly_public, NO KV/D1/DO/R2 (IS-06).
+  // Resolved relative to THIS config file (worker/wrangler.jsonc) -> ./index.ts.
+  "name": "voltbase-api",
+  "main": "./index.ts",
+  "compatibility_date": "2026-08-04",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "vars": {
+    "ENVIRONMENT": "development"
+  }
+}

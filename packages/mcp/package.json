@@ -1,0 +1,29 @@
+{
+  "name": "@voltbase/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json",
+    "build:worker": "wrangler deploy --dry-run --config worker/wrangler.jsonc"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@voltbase/core": "*",
+    "@voltbase/providers": "*",
+    "hono": "4.13.7",
+    "zod": "4.6.5"
+  }
+}

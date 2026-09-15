@@ -1,0 +1,38 @@
+{
+  "name": "voltbase",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*",
+    "site"
+  ],
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.jsonc",
+    "build": "node site/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "eslint . --fix",
+    "format:check": "eslint .",
+    "test": "vitest run",
+    "smoke": "bash scripts/smoke.sh",
+    "verify": "bash scripts/verify.sh",
+    "check:banned": "bash scripts/check-banned.sh"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.1.9",
+    "@types/node": "22.20.2",
+    "eslint": "10.10.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "4.1.11",
+    "wrangler": "4.131.2"
+  },
+  "overrides": {
+    "vitest": "4.1.11"
+  }
+}

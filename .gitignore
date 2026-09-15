@@ -1,0 +1,8 @@
+.dev.vars
+node_modules/
+dist/
+site/dist/
+coverage/
+.wrangler/
+.astro/
+*.tsbuildinfo

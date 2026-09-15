@@ -1,0 +1,3 @@
+voltbase scaffold fixture — clean.
+The healthz route answers {"ok":true,"stage":1} and the landing page
+mentions voltbase. No keys, no tokens, no trailers in this file.

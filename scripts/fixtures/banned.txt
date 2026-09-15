@@ -1,0 +1,4 @@
+voltbase scaffold fixture — banned (intentional violations for the gate).
+Do NOT copy these lines into real files.
+token: ghp_abcdefghijklmnopqrstuvwxyz0123456789
+Co-Authored-By: Fixture Bot <fixture@example.com>

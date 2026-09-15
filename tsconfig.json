@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "packages/*/src/**/*.ts",
+    "packages/mcp/worker/**/*.ts",
+    "packages/mcp/*.config.ts",
+    "packages/*/vitest.config.ts",
+    "site/tests/**/*.ts",
+    "vitest.config.ts",
+    "vitest.shared.ts"
+  ]
+}

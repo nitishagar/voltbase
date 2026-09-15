@@ -1,0 +1,12 @@
+{
+  // voltbase Worker (S1 scaffold). Stateless edge: NO KV/D1/DO/R2 bindings in
+  // v0.1 until an ADR explicitly adds one with budget math (IS-06, stack.md).
+  // Resolved relative to THIS config file -> packages/mcp/worker/index.ts.
+  "name": "voltbase-api",
+  "main": "./packages/mcp/worker/index.ts",
+  "compatibility_date": "2026-08-04",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "vars": {
+    "ENVIRONMENT": "development"
+  }
+}

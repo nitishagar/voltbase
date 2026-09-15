@@ -1,0 +1,18 @@
+{
+  // ONE strictness contract for every package (mirrors lumen tsconfig.base.json).
+  // ESM-only: NodeNext resolution requires explicit `.js` import extensions in
+  // source. `exactOptionalPropertyTypes` stays OFF (lumen parity).
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
