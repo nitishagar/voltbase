@@ -10,25 +10,27 @@
 ## 1. Status
 
 - Current stage: S0
-- Stage status: NOT_STARTED
-- Last verified commit: none
-- Next action: Create `~/repos/learn/voltbase`, `git init`, copy this LEDGER, commit `S0: initialise ledger`, then spawn S0 researcher 1 (frameworks incl. Go/Rust).
+- Stage status: PASSED
+- Last verified commit: none (S0 commit pending this boundary)
+- Next action: Commit `S0: choose stack and feeds` (6 ARCH files + research), then spawn S1 builder (scaffold, tooling, gates).
 - Blocked on: none
-- Updated: 2026-09-14T16:30:00Z by verification pass 8 (exhaustive per-claim, 6 seam agents A-F + main-context sed/gzip/npm checks + live fetch of OCM #237/#245, NAPSPAN, Pages docs: A 2 citation nits, B 2 citation fixes, C build-vs-measure date wording, D AFIR-label note, E 4 agent-refutations rejected in main context [#237 stands, #245 separate; NAPSPAN pricing live; Cloudflare-Pages vs GitHub-Pages confusion; eur-lex now fetchable], F CONFIRMED zero load-bearing [R]; still NOT_STARTED, ~/repos/learn/voltbase absent)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S0-VERIFY (PASS: 115/200 lines, env names-only, rubric recompute OK, W1 math recompute OK, remote empty, docs/ untracked)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: research + plan + spec + validation on disk (thoughts/); NO code yet; `~/repos/learn/voltbase` absent.
+- What exists: S0 PASSED on disk (research frameworks/feeds + free-tier-limits + 6 ARCH files, 115/200 lines); NO app code yet; `~/repos/learn/voltbase` git init + 1 commit `S0: initialise ledger`, docs/ untracked, no remotes.
 - How to run it: n/a until S1 (`npm install && npm run verify` then).
-- What is faked locally: nothing yet; S0 uses live docs only.
-- Gotchas: private repo ⇒ Pages local-preview only until public flip; `private:true` blocks publish; Worker stateless; LOCAL_ONLY divergence by design; sequential agents (ratelimit); pin vitest 4.1.x + `@cloudflare/vitest-plugin` (not pool-workers) + TypeScript ≤6.0.x (TS 7.0 breaks typescript-eslint); Worker size cap is 64 MiB uncompressed (1.5 MB gzip is our own budget); D1 Free hard-fails past daily caps; 5 crons/account, 6 concurrent outbound; OCM needs an API key (BYOK); OSM from extracts never live Overpass; NL NDW is CC0 by site-wide statement (dataset page check pending); MCP-on-Workers baseline ≈298 KB gzip (lumen measured).
-- Parallel work in flight: none (forbidden).
+- What is faked locally: nothing yet; S0 uses live docs only (npm view + observed URLs 2026-09-14).
+- Gotchas: private repo ⇒ Pages local-preview only until public flip; `private:true` blocks publish; Worker stateless; LOCAL_ONLY divergence by design; sequential agents (ratelimit); pin vitest 4.1.11 + `@cloudflare/vitest-plugin` 1.1.9 + TS 5.9.3; Worker cap 64 MiB uncompressed (1.5 MB gzip self-budget); D1 Free hard-fails past caps; 5 crons/account, 6 concurrent outbound; OCM BYOK; OSM extracts never live Overpass; NL NDW CC0 site-wide; MCP baseline ≈298 KB gzip.
+- Decisions: Hono 4.13.7 default (105 vs itty 100, margin 5<10, itty fallback); npm not pnpm; feeds NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only cron + 80% guard + cut-to-artifact; Collective partitioned (feature_type, regional_cut, source, licence).
+- Open: LU 2nd DATEX II licence Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi needs keyed call; S1 next.
+- Parallel work in flight: none (sequential per PLAN 1.8 + LEDGER 0.3; user confirmed stay-sequential 2026-09-15).
 
 ## 3. Stage table
 
 | Stage | Status | Builder | Verifier rounds | Final commit | Tests total | Report |
 |---|---|---|---|---|---|---|
-| S0 | NOT_STARTED | | | | 0 | |
+| S0 | PASSED | architect | verifier 1 round PASS | pending `S0: choose stack and feeds` | 0 | docs/ledger/S0-ARCH-brief.md |
 | S1 | NOT_STARTED | | | | | |
 | S2 | NOT_STARTED | | | | | |
 | S3 | NOT_STARTED | | | | | |
@@ -82,3 +84,4 @@
 | 2026-09-14T15:00:00Z | S0 | research-verifier | follow-up pass 6: all 5 S0 re-pin tickets closed (OCM spec re-pinned, D1 date primary-sourced, NAPSPAN pricing live, NL page checked, DE model verified); LU second-set licence flagged (new issue 10); IS-03 edges updated | ok | — |
 | 2026-09-14T14:57:00Z | S0 | research-verifier | verification pass 7 (exhaustive per-claim, 6 seam agents A-F + main-context gzip/metafile/OCM checks): A/B/D CONFIRMED, C grouping-clarified (both splits recorded, dominance ≥81%), E 403-nuance (call /v3/openapi with key), F FLAGS accepted; 0 plan logic changes | ok | — |
 | 2026-09-14T16:30:00Z | S0 | research-verifier | verification pass 8 (exhaustive per-claim, 6 seam agents + main-context + live fetch): 5 citation fixes applied inline (remote :111-112, builder :113-117, BYOK :1-9/:39-42, README :8+:19, build-vs-measure dates); 4 Seam-E refutations REJECTED (#237 DATEX II stands vs #245 OCPI; NAPSPAN pricing live; Cloudflare-vs-GitHub Pages confusion; eur-lex fetchable); 0 intent changes, 0 plan logic changes | ok | — |
+| 2026-09-15T00:00:00Z | S0 | orchestrator-verifier | S0-ARCH verify PASS: 6 files 115/200 lines, env.md names-only (0 values), rubric recompute OK (Hono 105/itty 100/plain 79/Rust 54/Go 43), W1 math recompute OK (1440/d, KV 4.3x, D1 2.88M=29x, hourly-full 144k>100k, transitions ~7k/d), remote empty, docs/ untracked, LEDGER §§1-3 rewritten | PASS | pending |
