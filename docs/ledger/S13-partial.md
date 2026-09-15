@@ -83,3 +83,10 @@ Real deploy: NOT RUN per brief (dry-run only).
 - Public flip DONE (user-approved): repo now PUBLIC; Pages enabled `build_type=workflow`; pages.yml wired to publish (`configure-pages@v5` → `upload-pages-artifact@v3` → `deploy-pages@v4`, master trigger fixed from main) — commit 9add3a5; https://nitishagar.github.io/voltbase/ serves 200.
 - CI green on GitHub for the first time (all 5 jobs): latent CI-only failure fixed — publish-workspaces CI guard scoped to `--publish` (commit 5dca212; repro: `CI=true npx vitest run tests/release-ttfb.test.ts`).
 - STILL BLOCKED, unchanged: `wrangler deploy` (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), `wrangler secret put OCM_API_KEY` (needs value), tag `v0.1.0` (follows successful deploy per §4). Branch protection now possible (public).
+
+## Closing — 2026-09-15 S13 DEPLOYED
+- Auth: wrangler OAuth via user terminal `wrangler login` (account 34e7ed7a6a41b422fc5ef5a26601ee93). An API token was also pasted in chat and deliberately NOT used — rotate it (it sat in conversation logs).
+- Deploy: `wrangler deploy --config packages/mcp/worker/wrangler.jsonc` at 8a1abdf (ENVIRONMENT=production) — https://voltbase-api.nitishagar.workers.dev, cron `17 * * * *` registered, version `2b5ae5e9-54d4-44fa-a2db-d669cc38f2dc` (2,119.49 KiB raw / 383.67 KiB gz / 160 ms startup).
+- Live smoke: `/healthz` → `{"ok":true,"stage":8}`; `/` 200; `/api/v1/sites?limit=2` + `/api/v1/sites/OCM:900000` serve licence-attributed rows; `POST /mcp` `tools/list` answers all tools.
+- `wrangler secret put OCM_API_KEY` SKIPPED: no value provided; runtime is caller-BYOK (`x-ocm-key`) per IS-05, so nothing is missing.
+- Tag `v0.1.0` (annotated, zero trailers) pushed. All S13 objectives met; LEDGER (local-only) records DEPLOYED.
