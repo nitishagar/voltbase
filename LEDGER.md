@@ -10,20 +10,20 @@
 ## 1. Status
 
 - Current stage: S13
-- Stage status: PARTIAL (pushed private; deploy blocked on credentials)
-- Last verified commit: 72477be (S8: pass clean-clone audit)
-- Next action: Provide `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (via env, never in git), then: `wrangler secret` + `wrangler deploy` + public flip + Pages check + tag `v0.1.0`. See docs/ledger/S13-partial.md §BLOCKED.
-- Blocked on: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (both absent); OCM_API_KEY value (live check); branch protection needs Pro/public (HTTP 403 while private-free)
-- Updated: 2026-09-15T00:00:00Z by orchestrator S13-VERIFY r2 (PASS-PARTIAL: VERIFY OK stage=8, 130/130, remote origin private pushed 8e213db, dry-run exit 0, no flip/tag/deploy)
+- Stage status: PARTIAL (public flip DONE: repo PUBLIC, Pages live 200, CI 5/5 green on GitHub, master protected require-ci; wrangler deploy + tag v0.1.0 still blocked on credentials)
+- Last verified commit: 5dca212 (S13: scope release CI guard to --publish path — CI green on GitHub run 34933522064)
+- Next action: Export `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (env, never git), then `wrangler deploy --config packages/mcp/worker/wrangler.jsonc` (worker config carries the S6 cron; root config is dev-only) → live `/healthz` check → optional `wrangler secret put OCM_API_KEY` → tag `v0.1.0` + push → LEDGER `DEPLOYED`.
+- Blocked on: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (deploy); OCM_API_KEY value (optional live OCM check)
+- Updated: 2026-09-15T05:45:00Z by orchestrator S13 flip run (user-approved flip: pages.yml publish wired 9add3a5, CI-guard fix 5dca212, repo PUBLIC, Pages build_type=workflow + URL 200, branch protection strict 5-contexts)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S0–S8 PASSED (VERIFY OK stage=8, 130/130 tests); S13 PARTIAL — repo `nitishagar/voltbase` PRIVATE on origin, master pushed, dry-run exit 0; NO flip/tag/deploy/publish.
+- What exists: S0–S8 PASSED (VERIFY OK stage=8, 130/130 tests); S13 flip DONE — repo `nitishagar/voltbase` PUBLIC, Pages live https://nitishagar.github.io/voltbase/ (200), CI 5/5 green on GitHub, master protected (strict, require typecheck/lint/build/test/smoke); deploy + tag NOT done (credentials).
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request; S8 clone was file-local.
-- Gotchas: repo now PRIVATE on origin (not empty); `private:true` stays; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e; S13 stopped at credential wall (no invention).
-- Open: CF token/account (deploy), OCM key value (live check), GITHUB_TOKEN+flip (Pages), protection (Pro/public); LU 2nd-set / PT Mobi.e / OCM-keyed-call (ingest-time).
+- What is faked locally: site served from Pages (built artifact); memory journal/budget; last-good artifact; e2e via app.request; Worker not yet deployed anywhere.
+- Gotchas: deploy uses `packages/mcp/worker/wrangler.jsonc` (has the S6 cron `17 * * * *`), NOT the root dev config; master is protected (direct admin pushes still allowed; force pushes blocked); `private:true` stays until a real npm release; Worker stateless; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 1/5 crons, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e; user-approved public flip executed 2026-09-15.
+- Open: CF token/account (deploy+tag), OCM key value (optional), LU 2nd-set / PT Mobi.e / OCM-keyed-call (ingest-time).
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -39,7 +39,7 @@
 | S6 | PASSED | builder | verifier r1 PASS | f41aafc | 122 | docs/ledger/S6-verify-r1.md |
 | S7 | PASSED | builder | verifier r1 PASS | 7c468e0 | 130 | docs/ledger/S7-verify-r1.md |
 | S8 | PASSED | auditor (fresh clone) | verifier r1 PASS | 72477be | 130 | docs/ledger/S8-audit.md |
-| S13 | PARTIAL | builder | verifier r1 BLOCKED (gate-trip) → r2 PASS-PARTIAL | 8e213db (partial record, pushed private) | 130 | docs/ledger/S13-partial.md |
+| S13 | PARTIAL (flip done; deploy+tag blocked) | builder | r1 BLOCKED (gate-trip) → r2 PASS-PARTIAL → flip run (9add3a5, 5dca212) | 5dca212 (flip+fix; original partial 8e213db) | 130 | docs/ledger/S13-partial.md + addendum |
 
 ## 4. Decisions
 
@@ -53,8 +53,8 @@
 
 - Node: v22.23.2 npm 10.9.8 | gh: nitishagar (scopes admin:public_key, gist, read:org, repo; verified 2026-09-14)
 - Registry facts 2026-09-14 (`npm view`): hono 4.13.7, itty-router 5.0.24, wrangler 4.131.2, @cloudflare/vitest-plugin 1.1.9 (peer vitest ^4.1), vitest 4.1.11 (5.0.0 unsupported by plugin), typescript 7.0.2 latest / 6.0.3 last usable with typescript-eslint 8.70.0, @modelcontextprotocol/sdk 1.30.0, agents 0.23.0, astro 7.3.2, pagefind 1.5.2, zod 4.6.5, eslint 10.10.0
-- Local: `~/repos/learn/voltbase`; remote: `origin → github.com/nitishagar/voltbase` (PRIVATE, pushed S13-partial; no flip until deploy ready)
-- Vars/secrets/bindings: docs/env.md (S0); credentials present: gh nitishagar only; ABSENT: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OCM_API_KEY value (see S13-partial BLOCKED)
+- Local: `~/repos/learn/voltbase`; remote: `origin → github.com/nitishagar/voltbase` (PUBLIC since 2026-09-15 flip; Pages enabled `build_type=workflow`, live at https://nitishagar.github.io/voltbase/; master protected require-ci)
+- Vars/secrets/bindings: docs/env.md (S0); credentials present: gh nitishagar only; ABSENT: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OCM_API_KEY value (deploy+tag pending these)
 
 ## 6. Open issues
 
@@ -71,8 +71,10 @@
 | 9 | research pass 4 | S5–S8 briefs need explicit Depends/Extra-gates/Files-owned (PLAN_VALIDATION W7) | Low | CLOSED (stack.md S5–S8 lines, verified S0) |
 | 10 | research pass 6 | LU second multi-operator DATEX II set is "License Not Specified" — clear licence before ingesting beyond CC0 Chargy KML | Medium | open → ingest-time (ADR-002 ticket; S13+ feed onboarding) |
 | 11 | research pass 6 | OCM spec URL re-pinned (ocm-docs raw + /v3/openapi); D1 2026-09-01 date primary-sourced; NAPSPAN pricing re-pinned; FR canonical URL + NAP beta noted | Low | research-closed → S0 cites new URLs |
-| 12 | S13 run | Real `wrangler deploy` needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (both absent); live OCM check needs OCM_API_KEY value; Pages needs public flip + GITHUB_TOKEN | High | BLOCKED → provide creds (see docs/ledger/S13-partial.md), then deploy+flip+tag v0.1.0 |
-| 13 | S13 run | Branch protection require-CI returns HTTP 403 on private-free plan | Low | BLOCKED (applies on public flip or Pro; recorded in S13-partial.md §2) |
+| 12 | S13 run | Real `wrangler deploy` needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (both absent); live OCM check needs OCM_API_KEY value; Pages needs public flip + GITHUB_TOKEN | High | PART-CLOSED (flip+Pages done 2026-09-15; deploy+tag v0.1.0 still blocked on CF creds) |
+| 13 | S13 run | Branch protection require-CI returns HTTP 403 on private-free plan | Low | CLOSED (public flip 2026-09-15: protection ON, strict, contexts typecheck/lint/build/test/smoke) |
+| 14 | S13 flip run | Latent: publish-workspaces CI guard tripped the dry-run in CI (test job failed on every GitHub push while green locally) | Medium | CLOSED (5dca212: guard scoped to --publish; CI 5/5 green run 34933522064) |
+| 15 | S13 flip run | Runbook + S13-partial deploy command pointed at root wrangler config (no `triggers.crons`) — would deploy without the S6 cron | Medium | CLOSED (runbook+S13-partial corrected 2026-09-15 to packages/mcp/worker/wrangler.jsonc) |
 
 ## 7. Event log (append only; newest last)
 
@@ -99,3 +101,4 @@
 | 2026-09-15T00:00:00Z | S13 | orchestrator-verifier | S13 verify r1 BLOCKED: check-banned FAIL on S13-partial.md literal trailer pattern (builder artifact trips own gate); transport/visibility/dry-run confirmed (private, no tags, dry-run 0, CF names absent) | BLOCKED | — |
 | 2026-09-15T00:00:00Z | S13 | orchestrator | S13 fix: reworded S13-partial.md trailer line to descriptive citation (no literals); check-banned OK + VERIFY OK stage=8 restored | ok | — |
 | 2026-09-15T00:00:00Z | S13 | orchestrator-verifier | S13 verify r2 PASS-PARTIAL: VERIFY OK stage=8, 130/130, banned OK, remote origin private, dry-run exit 0, no flip/tag/deploy; BLOCKED items recorded (CF token/account, OCM key value, flip+Pages, protection) | PASS-PARTIAL | pending |
+| 2026-09-15T05:35:00Z | S13 | orchestrator | S13 flip run (user-approved "Deploy + public flip"; CF creds still absent so deploy deferred): pages.yml publish wired + master trigger fixed (9add3a5), repo flipped PUBLIC via API, Pages enabled build_type=workflow, pages run green, https://nitishagar.github.io/voltbase/ 200; latent CI bug fixed — publish-workspaces CI guard scoped to --publish (5dca212), CI 5/5 green first time (run 34933522064); runbook+S13-partial deploy config corrected to packages/mcp/worker/wrangler.jsonc (cron); branch protection ON (strict, 5 contexts) | ok (deploy+tag still blocked on creds) | 9add3a5, 5dca212 |

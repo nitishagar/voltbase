@@ -6,7 +6,9 @@
    mirror (stays empty until S13 per IS-09).
 2. `npm ci && npm run verify` must print `VERIFY OK stage=7` with 130+ tests
    green, bundle OK, TTFB OK, `check-banned: OK`.
-3. `wrangler deploy --config wrangler.jsonc` (Worker `voltbase-api`).
+3. `wrangler deploy --config packages/mcp/worker/wrangler.jsonc` (Worker
+   `voltbase-api`; this config — not the root dev one — carries the single
+   S6 cron `triggers.crons ["17 * * * *"]`, asserted by reliability.test.ts).
 4. Docs: `npm run build` emits `site/dist`; publish via the trigger-guarded
    Pages workflow only (it skips while the repo is private).
 5. Never publish npm workspaces while `private:true`. For a release dry-run:

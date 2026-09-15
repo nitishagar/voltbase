@@ -65,7 +65,7 @@ Real deploy: NOT RUN per brief (dry-run only).
 - Trailer grep over last 5 commit bodies (4 patterns per scripts/check-banned.sh) → no matches (exit 1, clean)
 
 ## BLOCKED (exact credential/condition names)
-1. Real `wrangler deploy` (`wrangler deploy --config wrangler.jsonc`, Worker `voltbase-api`) — needs:
+1. Real `wrangler deploy` (`wrangler deploy --config packages/mcp/worker/wrangler.jsonc`, Worker `voltbase-api`, incl. the S6 cron; corrected 2026-09-15 from the root dev config, which lacks `triggers.crons`) — needs:
    - `CLOUDFLARE_API_TOKEN` (ABSENT, verified `[ -z "${CLOUDFLARE_API_TOKEN+x}" ]`)
    - `CLOUDFLARE_ACCOUNT_ID` (ABSENT, verified)
    - Source of names: `docs/env.md`, `docs/runbook.md` (deploy section). Never invent values.
@@ -76,5 +76,10 @@ Real deploy: NOT RUN per brief (dry-run only).
 
 ## Notes
 - `LEDGER.md` untouched per brief.
-- Repo stays PRIVATE at `github.com:nitishagar/voltbase.git`, `master` tracks `origin/master`.
+- Repo stays PRIVATE at `github.com/nitishagar/voltbase.git`, `master` tracks `origin/master`.
 - This file (`docs/ledger/S13-partial.md`) written post-push; intentionally uncommitted this run (brief orders write only, no follow-up commit/tag/flip).
+
+## Addendum — 2026-09-15 post-flip (orchestrator)
+- Public flip DONE (user-approved): repo now PUBLIC; Pages enabled `build_type=workflow`; pages.yml wired to publish (`configure-pages@v5` → `upload-pages-artifact@v3` → `deploy-pages@v4`, master trigger fixed from main) — commit 9add3a5; https://nitishagar.github.io/voltbase/ serves 200.
+- CI green on GitHub for the first time (all 5 jobs): latent CI-only failure fixed — publish-workspaces CI guard scoped to `--publish` (commit 5dca212; repro: `CI=true npx vitest run tests/release-ttfb.test.ts`).
+- STILL BLOCKED, unchanged: `wrangler deploy` (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), `wrangler secret put OCM_API_KEY` (needs value), tag `v0.1.0` (follows successful deploy per §4). Branch protection now possible (public).
