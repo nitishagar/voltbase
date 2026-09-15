@@ -23,6 +23,7 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@voltbase/core": "*",
     "@voltbase/mcp": "*"
   }

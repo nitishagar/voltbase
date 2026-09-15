@@ -375,16 +375,19 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'referrer-policy': 'no-referrer',
 };
 
-/** Minimal CORS for the browser-readable API surface only (not /healthz, not /). */
+/** Minimal CORS for the browser-readable API + MCP surfaces (not /healthz, not /). */
 export const CORS_HEADERS: Record<string, string> = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, OPTIONS',
-  'access-control-allow-headers': 'Content-Type, Accept, x-voltbase-key, x-ocm-key',
+  'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+  'access-control-allow-headers':
+    'Content-Type, Accept, mcp-session-id, MCP-Protocol-Version, x-voltbase-key, x-ocm-key',
+  'access-control-expose-headers': 'mcp-session-id',
   'access-control-max-age': '86400',
 };
 
-/** CORS surface: exactly the versioned API (mirrors the lumen isCorsSurface pattern). */
-export const isCorsSurface = (pathname: string): boolean => pathname.startsWith('/api/v1/');
+/** CORS surface: exactly the versioned API + the MCP gateway (mirrors the lumen isCorsSurface pattern). */
+export const isCorsSurface = (pathname: string): boolean =>
+  pathname.startsWith('/api/v1/') || pathname === '/mcp';
 
 /** Applies security (+ CORS on the API surface) and request-id headers to a response. */
 export const withResponseHeaders = (

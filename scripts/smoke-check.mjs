@@ -2,9 +2,10 @@
 /**
  * scripts/smoke-check.mjs — zero-dependency route smoke for `scripts/smoke.sh`.
  * Imports the Worker Hono app directly (no `wrangler dev` needed) and asserts
- * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":3}) + the S3
+ * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":4}) + the S3
  * API slice: search (/api/v1/sites), site detail, and status (stale-labelled,
- * fixtures predate the 60min SLO) with security + request-id headers present.
+ * fixtures predate the 60min SLO) with security + request-id headers present
+ * + the S4 MCP slice: POST /mcp tools/list (4 locked tools) and GET /mcp 405.
  */
 import { app } from '../packages/mcp/worker/index.ts';
 import { STAGE } from '../src/lib/stage.ts';
@@ -31,7 +32,7 @@ try {
 }
 check(hz.status === 200, `GET /healthz status ${hz.status}, expected 200`);
 check(body !== null && body.ok === true && body.stage === STAGE, `GET /healthz body ${JSON.stringify(body)}, expected {"ok":true,"stage":${String(STAGE)}}`);
-check(STAGE === 3, `STAGE ${String(STAGE)}, expected 3`);
+check(STAGE === 4, `STAGE ${String(STAGE)}, expected 4`);
 
 const search = await app.request('/api/v1/sites?limit=5&offset=0');
 let searchBody = null;
@@ -78,5 +79,27 @@ check(
   `GET /api/v1/status/:id body ${JSON.stringify(statusBody)?.slice(0, 200)}, expected stale:true + reason`,
 );
 
+const mcpList = await app.request('/mcp', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json, text/event-stream',
+    Host: 'localhost',
+  },
+  body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+});
+const mcpText = await mcpList.text();
+check(mcpList.status === 200, `POST /mcp status ${mcpList.status}, expected 200`);
+for (const name of ['voltbase_search_sites', 'voltbase_site_detail', 'voltbase_status', 'voltbase_reliability']) {
+  check(mcpText.includes(name), `POST /mcp tools/list missing ${name}`);
+}
+check(
+  typeof mcpList.headers.get('x-request-id') === 'string' && mcpList.headers.get('x-request-id') !== '',
+  'POST /mcp missing x-request-id',
+);
+
+const mcpGet = await app.request('/mcp');
+check(mcpGet.status === 405, `GET /mcp status ${mcpGet.status}, expected 405`);
+
 if (failed) process.exit(1);
-process.stdout.write('smoke-check: / + /healthz + search + site + status green\n');
+process.stdout.write('smoke-check: / + /healthz + search + site + status + mcp green\n');

@@ -9,21 +9,21 @@
 
 ## 1. Status
 
-- Current stage: S3
+- Current stage: S4
 - Stage status: PASSED
-- Last verified commit: 7d5e7d0 (S2: add normalisation core and fixtures)
-- Next action: Commit `S3: add public discovery API and abuse controls`, then spawn S4 builder (MCP server and CLI).
+- Last verified commit: 8e27526 (S3: add public discovery API and abuse controls)
+- Next action: Commit `S4: add MCP server and CLI`, then spawn S5 builder (docs site and landing).
 - Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S3-VERIFY (PASS r1: VERIFY OK stage=3, 69/69 tests, mutation isBlockedHost→false 1-fail then green, remote empty)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S4-VERIFY (PASS r1: VERIFY OK stage=4, 90/90 tests, mutation tool-rename 5-fail then green, remote empty)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S3 PASSED (REST /api/v1/sites search/detail/status + stale-label, key-gate + IP ratelimit + allowlist/capping/SSRF-guard + BYOK + CORS + sec-headers + request-id, bundle gate 26915B); VERIFY OK stage=3, 69/69 tests.
+- What exists: S4 PASSED (buildMcpServer factory, 4 tools incl reliability stub, POST /mcp stateless + GET 405, CLI voltbase mcp stdio, identical tool lists); VERIFY OK stage=4, 90/90 tests.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; no KV/D1 (memory ratelimit, ADR-noted); fixture index servable-only, no live fetch.
-- Gotchas: private repo ⇒ Pages local-preview only; `private:true`; Worker stateless; sequential agents; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 5 crons, 6 concurrent; OCM BYOK; OSM extracts only; NL CC0 site-wide.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned, serve-time filter-then-serve, closed→404.
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi keyed call; S4 next.
+- What is faked locally: site/dist local build; no KV/D1; fixture index; reliability stub UNAVAILABLE_S6/LOCAL_ONLY.
+- Gotchas: private repo ⇒ Pages local-preview only; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7/sdk 1.30.0; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 5 crons, 6 concurrent; OCM BYOK; OSM extracts only.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned, closed→NOT_FOUND.
+- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call; S5 next.
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -33,8 +33,8 @@
 | S0 | PASSED | architect | verifier 1 round PASS | 5c98f8e | 0 | docs/ledger/S0-ARCH-brief.md |
 | S1 | PASSED | builder | verifier r1 PASS | 95e1f60 | 10 | docs/ledger/S1-verify-r1.md |
 | S2 | PASSED | builder | verifier r1 PASS | 7d5e7d0 | 37 | docs/ledger/S2-verify-r1.md |
-| S3 | PASSED | builder | verifier r1 PASS | pending `S3: add public discovery API and abuse controls` | 69 | docs/ledger/S3-verify-r1.md |
-| S4 | NOT_STARTED | | | | | |
+| S3 | PASSED | builder | verifier r1 PASS | 8e27526 | 69 | docs/ledger/S3-verify-r1.md |
+| S4 | PASSED | builder | verifier r1 PASS | pending `S4: add MCP server and CLI` | 90 | docs/ledger/S4-verify-r1.md |
 | S5 | NOT_STARTED | | | | | |
 | S6 | NOT_STARTED | | | | | |
 | S7 | NOT_STARTED | | | | | |
@@ -88,3 +88,4 @@
 | 2026-09-15T00:00:00Z | S1 | orchestrator-verifier | S1 verify r1 PASS: VERIFY OK stage=1, 10/10 tests (6/6 minimums), exact pins 11/11, wrangler voltbase-api + 2026-08-04 + global_fetch_strictly_public no KV/D1, CI no-deploy, mutation STAGE 1→999 1-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S2 | orchestrator-verifier | S2 verify r1 PASS: VERIFY OK stage=2, 37/37 tests (27 new: core 8 + normalise 13 + fixtures 6), partition key enforced, unknown⇒closed, closed never servable, fixtures 30+10, idempotent renormalise, attribution preserved, mutation isServable→true 7-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S3 | orchestrator-verifier | S3 verify r1 PASS: VERIFY OK stage=3, 69/69 tests (32 new: api 20 + guards 12), 4 routes 200, closed→404, 401/429 live, SSRF refused, stale+CSP+request-id, BYOK never stored, 0 mixed partitions, mutation isBlockedHost→false 1-fail then green, remote empty | PASS | pending |
+| 2026-09-15T00:00:00Z | S4 | orchestrator-verifier | S4 verify r1 PASS: VERIFY OK stage=4, 90/90 tests (21 new: server 12 + worker-mcp 5 + cli-mcp 4), 4 tools identical stdio/HTTP, key isolation, LOCAL_ONLY→CLI, bad-args typed, after= newer-only, POST 200/GET 405, mutation tool-rename 5-fail then green, remote empty | PASS | pending |

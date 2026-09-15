@@ -22,7 +22,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
     "@voltbase/core": "*",
+    "@voltbase/normalise": "*",
     "@voltbase/providers": "*",
+    "agents": "0.23.0",
     "hono": "4.13.7",
     "zod": "4.6.5"
   }
