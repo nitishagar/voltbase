@@ -5,9 +5,10 @@
  * read-only code (IS-06). BYOK (IS-05): the OCM key VALUE is read at call
  * time from its header by env-var NAME (`x-ocm-key` for `OCM_API_KEY`) and
  * handed to `buildMcpServer` as a per-request snapshot; it is never logged,
- * stored, cached, or echoed. The Worker runtime is `remote`, so
- * `voltbase_reliability` answers `LOCAL_ONLY_CAPABILITY` pointing at the
- * CLI (IS-07). Memory only, no KV/D1/DO/R2.
+ * stored, cached, or echoed. The Worker runtime is `remote`; S6 serves
+ * `voltbase_reliability` on both transports from the fixture index +
+ * prebuilt cut (no LOCAL_ONLY lane — no honestly remote-lacking compute).
+ * Memory only, no KV/D1/DO/R2.
  */
 import type { McpDeps } from '../src/server.ts';
 import { readByok, type KeyGateEnv } from './guards.ts';

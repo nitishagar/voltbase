@@ -3,11 +3,14 @@
   // worker/wrangler.jsonc topology). Same contract as the root wrangler.jsonc:
   // name voltbase-api, compat date 2026-08-04, nodejs_compat +
   // global_fetch_strictly_public, NO KV/D1/DO/R2 (IS-06).
+  // S6: exactly ONE hourly-class cron (ADR-002 §W1 transition-only poller);
+  // the ≤5 crons/account ceiling is asserted by reliability.test.ts.
   // Resolved relative to THIS config file (worker/wrangler.jsonc) -> ./index.ts.
   "name": "voltbase-api",
   "main": "./index.ts",
   "compatibility_date": "2026-08-04",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "triggers": { "crons": ["17 * * * *"] },
   "vars": {
     "ENVIRONMENT": "development"
   }

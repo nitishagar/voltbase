@@ -1,14 +1,19 @@
 /**
- * voltbase Worker (S5): the thin remote surface.
+ * voltbase Worker (S6): the thin remote surface.
  * - `GET /` — static landing fragment (contains "voltbase").
- * - `GET /healthz` — `{"ok":true,"stage":5}` with STAGE from src/lib/stage.ts.
+ * - `GET /healthz` — `{"ok":true,"stage":6}` with STAGE from src/lib/stage.ts.
  * - `GET /api/v1/sites?...` — bbox / connector / minPower / openOnly filters
  *   with limit/offset pagination over the in-memory fixture index.
  * - `GET /api/v1/sites/:id` — one servable site (closed/self ids ⇒ 404).
  * - `GET /api/v1/status/:id` — status + stale label against the 60min SLO.
+ * - `GET /api/v1/reliability/:id` — S6 uptime rollup (journal + prebuilt cut,
+ *   stale-labelled; exhausted budget ⇒ typed UPSTREAM_FAILED + cut).
  * - `POST /mcp` — MCP over Streamable HTTP via `createMcpHandler`
  *   (stateless, per-request `buildMcpServer` over `mcpComposition`); the same
  *   4-tool set as CLI stdio (IS-07). `GET /mcp` ⇒ typed 405 JSON-RPC error.
+ * - `scheduled()` — ONE hourly-class cron (`triggers.crons ["17 * * * *"]`,
+ *   the only cron on the account for v0.1) running the S6 poller with the
+ *   80% write-budget guard (≤50 subrequests / ≤6 concurrent per invocation).
  * Abuse controls (IS-05/IS-08/IS-10): optional free-key gate (401), in-memory
  * IP rate limit 60/min (429), outbound allowlist + capping fetcher +
  * public-URL guard (S6 seam, unused on the read-only paths), per-request
@@ -35,6 +40,12 @@ import {
   type KeyGateEnv,
 } from './guards.ts';
 import { errorJson, handleGetSite, handleGetStatus, handleListSites } from './routes.ts';
+import {
+  handleGetReliability,
+  runScheduledPoll,
+  type CronEvent,
+  type ScheduledCtx,
+} from './reliability.ts';
 
 export interface WorkerEnv extends KeyGateEnv {
   ENVIRONMENT?: string;
@@ -136,7 +147,7 @@ export const createApp = (
   app.get('/', (c) =>
     c.html(
       '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>voltbase</title></head>' +
-        '<body><h1>voltbase</h1><p>open-core EV charging-data tooling (stage 5 API + MCP)</p></body></html>',
+        '<body><h1>voltbase</h1><p>open-core EV charging-data tooling (stage 6 API + MCP)</p></body></html>',
     ),
   );
 
@@ -148,6 +159,7 @@ export const createApp = (
   app.get('/api/v1/sites', (c) => handleListSites(c));
   app.get('/api/v1/sites/:id', (c) => handleGetSite(c));
   app.get('/api/v1/status/:id', (c) => handleGetStatus(c, { now }));
+  app.get('/api/v1/reliability/:id', (c) => handleGetReliability(c, { now }));
 
   app.post('/mcp', async (c) => {
     // Fresh per-request server over the per-request BYOK composition (IS-05/IS-06);
@@ -194,7 +206,19 @@ export const createApp = (
 
 export const app = createApp({});
 
-export default app;
+/**
+ * Hourly-class cron entry point (S6, ADR-002 §W1): runs the transition-only
+ * poller with the 80% write-budget guard. The default export below exposes
+ * both `fetch` (the Hono app) and `scheduled` so workerd discovers the
+ * single `triggers.crons ["17 * * * *"]` tick from worker/wrangler.jsonc.
+ */
+export const scheduled = async (event: CronEvent, _env: WorkerEnv, ctx: ScheduledCtx): Promise<void> => {
+  const done = runScheduledPoll(event.scheduledTime);
+  ctx.waitUntil(done);
+  await done;
+};
+
+export default { fetch: app.fetch.bind(app), scheduled };
 
 /** Re-exported for tests and the S6 wiring point (request-id header name for clients). */
 export { REQUEST_ID_HEADER };

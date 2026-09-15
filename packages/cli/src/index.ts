@@ -39,7 +39,7 @@ Usage:
 
 Starts the voltbase MCP server on stdio (same buildMcpServer factory as
 POST /mcp: voltbase_search_sites, voltbase_site_detail, voltbase_status,
-voltbase_reliability stub). Stdout carries JSON-RPC frames only; the ready
+voltbase_reliability rollups). Stdout carries JSON-RPC frames only; the ready
 note goes to stderr. Piped EOF / SIGINT stops the server.
 
 Flags:

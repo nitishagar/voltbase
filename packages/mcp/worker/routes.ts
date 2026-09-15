@@ -17,6 +17,7 @@ export type ApiErrorCode =
   | 'RATE_LIMITED'
   | 'NOT_FOUND'
   | 'UPSTREAM_BLOCKED'
+  | 'UPSTREAM_FAILED'
   | 'PAYLOAD_TOO_LARGE';
 
 export const errorJson = (code: ApiErrorCode, status: number, message: string): Response =>

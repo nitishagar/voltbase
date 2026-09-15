@@ -32,7 +32,7 @@ try {
 }
 check(hz.status === 200, `GET /healthz status ${hz.status}, expected 200`);
 check(body !== null && body.ok === true && body.stage === STAGE, `GET /healthz body ${JSON.stringify(body)}, expected {"ok":true,"stage":${String(STAGE)}}`);
-check(STAGE === 5, `STAGE ${String(STAGE)}, expected 5`);
+check(STAGE === 6, `STAGE ${String(STAGE)}, expected 6`);
 
 const search = await app.request('/api/v1/sites?limit=5&offset=0');
 let searchBody = null;
@@ -100,6 +100,19 @@ check(
 
 const mcpGet = await app.request('/mcp');
 check(mcpGet.status === 405, `GET /mcp status ${mcpGet.status}, expected 405`);
+
+const rel = await app.request('/api/v1/reliability/OCM%3A900000');
+let relBody = null;
+try {
+  relBody = await rel.json();
+} catch {
+  relBody = null;
+}
+check(rel.status === 200, `GET /api/v1/reliability/:id status ${rel.status}, expected 200`);
+check(
+  relBody?.data?.id === 'OCM:900000' && typeof relBody?.data?.uptime === 'number',
+  `GET /api/v1/reliability/:id body ${JSON.stringify(relBody)?.slice(0, 200)}, expected id + numeric uptime`,
+);
 
 if (failed) process.exit(1);
 process.stdout.write('smoke-check: / + /healthz + search + site + status + mcp green\n');

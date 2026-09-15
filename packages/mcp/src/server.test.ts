@@ -1,8 +1,9 @@
 /**
  * S4 MCP server gates (node pool): the ONE `buildMcpServer` factory serves
  * the 4 locked tools over both transports with JSON-in-text results,
- * strict-args, BYOK isolation, LOCAL_ONLY/UNAVAILABLE_S6 honesty, newer-only
- * status polling, and a locked schema contract (IS-04/05/07).
+ * strict-args, BYOK isolation, S6 reliability rollups on both runtimes (the
+ * S4/S5 LOCAL_ONLY stub lane is removed — memory + prebuilt cut serve both),
+ * newer-only status polling, and a locked schema contract (IS-04/05/07).
  */
 import { describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -74,23 +75,28 @@ describe('search/detail/status happy', () => {
   });
 });
 
-describe('reliability stub + LOCAL_ONLY (IS-07)', () => {
-  it('answers UNAVAILABLE_S6 locally (typed, not failure)', async () => {
+describe('reliability rollups (S6, both runtimes)', () => {
+  it('serves uptime rollups locally with attribution (no UNAVAILABLE_S6 stub)', async () => {
     const client = await connectClient(deps({ runtime: 'local' }));
     const res = (await client.callTool({ name: 'voltbase_reliability', arguments: { id: 'OCM:900000' } })) as unknown as ToolText;
-    expect(res.isError).toBe(true);
-    expect(parseJson<{ code: string; tool: string }>(res)).toMatchObject({ code: 'UNAVAILABLE_S6', tool: 'voltbase_reliability' });
+    expect(res.isError).toBeUndefined();
+    const body = parseJson<{
+      data: { id: string; uptime: number; transitions: number; stale: boolean; attribution: { text: string } };
+    }>(res);
+    expect(body.data.id).toBe('OCM:900000');
+    expect(body.data.uptime).toBeGreaterThanOrEqual(0);
+    expect(body.data.uptime).toBeLessThanOrEqual(1);
+    expect(body.data.attribution.text.length).toBeGreaterThan(0);
     await client.close();
   });
 
-  it('answers LOCAL_ONLY_CAPABILITY remotely pointing at `voltbase mcp`', async () => {
+  it('serves the same rollups remotely (LOCAL_ONLY lane removed in S6)', async () => {
     const client = await connectClient(deps({ runtime: 'remote' }));
     const res = (await client.callTool({ name: 'voltbase_reliability', arguments: { id: 'OCM:900000' } })) as unknown as ToolText;
-    expect(res.isError).toBe(true);
-    const body = parseJson<{ code: string; cli: string; message: string }>(res);
-    expect(body.code).toBe('LOCAL_ONLY_CAPABILITY');
-    expect(body.cli).toBe('voltbase mcp');
-    expect(body.message).toContain('voltbase mcp');
+    expect(res.isError).toBeUndefined();
+    const body = parseJson<{ data: { id: string; uptime: number } }>(res);
+    expect(body.data.id).toBe('OCM:900000');
+    expect(body.data.uptime).toBeGreaterThanOrEqual(0);
     await client.close();
   });
 });

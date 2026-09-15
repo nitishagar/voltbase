@@ -14,15 +14,18 @@
  * Results are JSON-in-text; unknown args ⇒ typed `INVALID_ARGUMENTS`
  * (zod 4.6.5 strictObject at the wire + handler-side strictArgs guard);
  * closed/self ids ⇒ typed `NOT_FOUND` (never a closed signal, ADR-003);
- * `voltbase_reliability` is a stub ⇒ typed `UNAVAILABLE_S6` locally and typed
- * `LOCAL_ONLY_CAPABILITY` (pointing at `voltbase mcp`) remotely — never a
- * generic failure. Every served payload carries attribution + provenance
- * (IS-04); list responses additionally aggregate per-partition credits.
+ * `voltbase_reliability` serves S6 uptime rollups on BOTH runtimes from the
+ * in-memory fixture index + the read-only prebuilt cut — there is no
+ * honestly remote-lacking compute, so S6 removes the S4/S5 LOCAL_ONLY lane
+ * (documented here instead of kept). Every served payload carries
+ * attribution + provenance (IS-04); list responses additionally aggregate
+ * per-partition credits.
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { MAX_POWER_KW } from '@voltbase/normalise';
+import { WriteBudget, getReliability } from '@voltbase/providers';
 import {
   filterSites,
   findServableById,
@@ -128,8 +131,8 @@ const STATUS_DESC =
   'Live status for one site id with stale label (60min SLO). Optional after= (ISO instant): ' +
   'newer-only polling — returns newer:false when the row is not newer than after.';
 const RELIABILITY_DESC =
-  'Per-site reliability rollups (uptime from the S6 change journal). S6 stub in v0.1: ' +
-  'answers typed UNAVAILABLE_S6 locally, LOCAL_ONLY_CAPABILITY over remote MCP (run `voltbase mcp`).';
+  'Per-site reliability rollups (S6 change journal + trailing-24h uptime, stale-labelled). ' +
+  'Served on both transports from the fixture index + prebuilt cut; exhausted budget answers typed UPSTREAM_FAILED with the cut.';
 
 export const buildMcpServer = (deps: McpDeps): McpServer => {
   const server = new McpServer({ name: 'voltbase', version: '0.0.0' });
@@ -244,28 +247,37 @@ export const buildMcpServer = (deps: McpDeps): McpServer => {
   server.registerTool(
     'voltbase_reliability',
     {
-      title: 'Site reliability (S6 stub)',
-      description:
-        deps.runtime === 'remote' ? `${RELIABILITY_DESC} NOTE: unavailable over remote MCP (needs local compute).` : RELIABILITY_DESC,
+      title: 'Site reliability',
+      description: RELIABILITY_DESC,
       inputSchema: reliabilitySchema as unknown as AnySchema,
     },
     async (args: unknown) => {
       const a = args as unknown as z.infer<typeof reliabilitySchema>;
       const violation = strictArgs(a as Readonly<Record<string, unknown>>, ALLOWED_ARGS.voltbase_reliability);
       if (violation !== null) return err(violation);
-      if (deps.runtime === 'remote') {
+      const site = findServableById(a.id);
+      if (site === undefined) return err({ code: 'NOT_FOUND', message: 'unknown site id' });
+      // Fresh per-call composition (IS-06 null-cache): no shared journal or
+      // budget across calls; the rollup derives from the fixture row +
+      // read-only prebuilt cut, available on both transports.
+      const answer = getReliability({
+        id: site.id,
+        startStatus: site.status,
+        entries: [],
+        observedAt: site.provenance.retrievedAt,
+        nowMs: deps.now(),
+        budget: new WriteBudget(),
+      });
+      if (!answer.ok) {
         return err({
-          code: 'LOCAL_ONLY_CAPABILITY',
-          tool: 'voltbase_reliability',
-          message:
-            'voltbase_reliability needs local compute (S6 rollups) and is unavailable over remote MCP. Run instead: voltbase mcp',
-          cli: 'voltbase mcp',
+          code: answer.code,
+          message: answer.message,
+          cut: { ...answer.cut, source: site.source, attribution: site.attribution },
         });
       }
-      return err({
-        code: 'UNAVAILABLE_S6',
-        tool: 'voltbase_reliability',
-        message: 'reliability rollups land in S6 (change journal + uptime); v0.1 serves live status via voltbase_status',
+      return ok({
+        data: { ...answer.data, source: site.source, attribution: site.attribution },
+        byokConfigured: byokConfigured(deps),
       });
     },
   );
