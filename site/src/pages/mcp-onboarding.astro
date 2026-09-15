@@ -1,0 +1,64 @@
+---
+// voltbase MCP onboarding (S5, from packages/mcp/src/server.ts tool docs).
+// Source mirror; canonical static emit is site/build.mjs.
+const title = 'MCP onboarding — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Use the four voltbase MCP tools over CLI stdio or Streamable HTTP, with typed errors and per-result attribution." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/" aria-current="page">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>MCP onboarding</h1>
+      <p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The four tool names are identical on both.</p>
+
+      <h2>Option A — stdio (local)</h2>
+      <pre><code>voltbase mcp</code></pre>
+      <p>Stdio mode has full local compute, including the reliability stub answer below. Point any MCP-compatible client at the command above.</p>
+
+      <h2>Option B — HTTP (remote)</h2>
+      <pre><code>POST /mcp   # JSON-RPC: tools/list, then tools/call
+GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
+
+      <h2>The four tools</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Arguments</th><th>Answers</th></tr></thead>
+        <tbody>
+          <tr><td><code>voltbase_search_sites</code></td><td><code>bbox</code>, <code>connector</code>, <code>minPower</code>, <code>openOnly</code>, <code>limit</code>, <code>offset</code></td><td>Paged servable rows plus per-partition attribution credits</td></tr>
+          <tr><td><code>voltbase_site_detail</code></td><td><code>id</code> (for example <code>OCM:900000</code>)</td><td>One servable row, or typed <code>NOT_FOUND</code></td></tr>
+          <tr><td><code>voltbase_status</code></td><td><code>id</code>, optional <code>after</code> (ISO instant, newer-only polling)</td><td>Status plus the 60-minute stale label; <code>newer:false</code> when nothing is newer than <code>after</code></td></tr>
+          <tr><td><code>voltbase_reliability</code></td><td><code>id</code></td><td>Stub in v0.1: typed <code>UNAVAILABLE_S6</code> locally, typed <code>LOCAL_ONLY_CAPABILITY</code> remotely (run <code>voltbase mcp</code>)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Rules clients should know</h2>
+      <ul>
+        <li>Results are JSON-in-text; every served payload carries attribution and provenance.</li>
+        <li>Unknown arguments answer typed <code>INVALID_ARGUMENTS</code> (strict schemas, no silent drops).</li>
+        <li>Closed or unknown ids answer typed <code>NOT_FOUND</code> — the tools never confirm that a closed row exists.</li>
+        <li>BYOK is per request and by name (<code>OCM_API_KEY</code>); key values are never logged, stored or echoed. Missing key means a typed skip, not a failure.</li>
+      </ul>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>

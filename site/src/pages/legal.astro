@@ -1,0 +1,58 @@
+---
+// voltbase legal (S5, DRAFT markers + DPDP Act 2023 India-data note).
+// Source mirror; canonical static emit is site/build.mjs.
+const title = 'Legal (DRAFT) — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Draft legal notes for voltbase: licences, India data-only scope, and the DPDP Act 2023 note." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/" aria-current="page">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>Legal — DRAFT</h1>
+      <p class="notice"><strong>DRAFT:</strong> everything on this page is a draft pending review. It is engineering due-diligence, not legal advice. Nothing here widens the v0.1 scope (read-only discovery, no sessions, no payments).</p>
+
+      <h2>Repository licence</h2>
+      <p>Repository and package code is Apache-2.0. Data served through the API and MCP keeps its per-feed licence per row (see <a href="/voltbase/attributions/">Attributions</a>); the served index is a partitioned ODbL Collective Database, not a Derivative Database.</p>
+
+      <h2>India data-only scope — DRAFT</h2>
+      <p>India coverage in v0.1 is <strong>data-only</strong>: static OSM-extract rows (ODbL) for discovery, with EU-first live data. No live Indian operator feeds, no sessions, no payments.</p>
+
+      <h2>DPDP Act 2023 note — DRAFT</h2>
+      <p>India's Digital Personal Data Protection Act 2023 governs personal data; voltbase v0.1 serves charging-site location records (open data), not personal data, and stores no user data at the edge (stateless, no sessions, no KV/D1). Any future handling of personal data — including consent, notice and retention workflows for India users — must be designed, reviewed and recorded before it ships. This note is a <strong>DRAFT</strong> marker, not a compliance finding.</p>
+
+      <h2>Per-feed licence drafts</h2>
+      <ul>
+        <li>OCM user rows: CC BY 4.0 with attribution; provider-copyright rows excluded.</li>
+        <li>OSM extracts: ODbL 1.0 share-alike on OSM partitions only.</li>
+        <li>NL NDW: CC0; LU Chargy KML: CC0 (second DATEX II set excluded, licence ticket open).</li>
+        <li>FR IRVE: Licence Ouverte / Etalab 2.0; NOBIL (second wave): CC BY 4.0.</li>
+      </ul>
+      <p><strong>DRAFT</strong> — these summaries do not replace the publishers' terms linked from <a href="/voltbase/attributions/">Attributions</a>.</p>
+
+      <h2>Hosting</h2>
+      <p>Docs are built locally and previewed from <code>site/dist</code>; there is no publish while the repo is private. Robots allow public docs only.</p>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>

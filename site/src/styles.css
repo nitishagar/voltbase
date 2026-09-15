@@ -1,0 +1,169 @@
+/* voltbase docs stylesheet (S5) — single hand-written file, no build step (ADR-001 CSS default). */
+:root {
+  --ink: #14202b;
+  --muted: #51606f;
+  --line: #d9e1e8;
+  --wash: #f4f7f9;
+  --accent: #0b6e4f;
+  --accent-ink: #ffffff;
+  --warn-bg: #fff8e6;
+  --warn-line: #d9a400;
+  --code-bg: #eef2f5;
+  --max: 46rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #ffffff;
+  font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+
+.skip:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  background: var(--accent-ink);
+  padding: 0.5rem;
+}
+
+.site-head {
+  border-bottom: 1px solid var(--line);
+  background: var(--wash);
+}
+
+.site-head .wrap,
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+nav a {
+  color: var(--accent);
+}
+
+nav a[aria-current="page"] {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+main img {
+  max-width: 100%;
+}
+
+h1, h2, h3 {
+  line-height: 1.25;
+}
+
+.lede {
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.notice {
+  border: 1px solid var(--warn-line);
+  background: var(--warn-bg);
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  border-radius: 0.25rem;
+}
+
+code {
+  font: 0.875rem/1.5 ui-monospace, "Cascadia Code", Menlo, monospace;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--wash);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cta.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.grid-3 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  margin: 1rem 0;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+footer.site-foot {
+  border-top: 1px solid var(--line);
+  background: var(--wash);
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}

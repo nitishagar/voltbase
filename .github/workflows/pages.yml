@@ -1,0 +1,27 @@
+name: Pages (scaffold, S5)
+
+# SCAFFOLD ONLY — local preview until the public flip. The deploy job is
+# trigger-guarded and can never run while the repo is private: it is skipped
+# unless the repository is public (manual dispatch on a private repo still
+# skips). No secrets are referenced here; publishing happens only on the
+# S13-equivalent public flip.
+on:
+  push:
+    branches: [main]
+    paths: ['site/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pages-scaffold:
+    if: github.event.repository.visibility == 'public'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm run build
+      - run: echo "pages scaffold: public repo — local dist build verified, no publish wired until the S13 flip"

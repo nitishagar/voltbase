@@ -1,0 +1,65 @@
+---
+// voltbase providers / BYOK (S5, from ADR-002 and docs/env.md — names only).
+// Source mirror; canonical static emit is site/build.mjs.
+const title = 'Providers / BYOK — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Which data providers voltbase uses, which need your own key by name, and which are second-wave notes only." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/" aria-current="page">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>Providers / BYOK</h1>
+      <p class="lede">Keys are referenced <strong>by name</strong> per request and never stored. This page names names only — there are no key values anywhere on this site.</p>
+
+      <h2>Live in v0.1</h2>
+      <table>
+        <thead><tr><th>Feed</th><th>Access</th><th>Key name (by name only)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>NL NDW (OCPI 2.2.1, CC0)</td><td>Open, no key</td><td>—</td><td>Hourly-class static refresh; tariffs included</td></tr>
+          <tr><td>LU Chargy KML (CC0)</td><td>Open, no key</td><td>—</td><td>CC0 KML set only; the second multi-operator DATEX II set stays excluded until its licence clears</td></tr>
+          <tr><td>FR IRVE (Licence Ouverte / Etalab)</td><td>Open, no key</td><td>—</td><td>Static schema plus dynamic keyed rows</td></tr>
+          <tr><td>Open Charge Map (CC BY 4.0 user rows)</td><td>BYOK, key mandatory</td><td><code>OCM_API_KEY</code></td><td>Filtered to <code>opendata=true</code> before ingest; provider-copyright rows excluded; throttle duplicate queries; send as <code>X-API-Key</code> or <code>key=</code></td></tr>
+          <tr><td>OpenStreetMap extracts (ODbL)</td><td>CI extracts only</td><td>—</td><td>Never live Overpass from the Worker</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Second wave (notes only, not ingested)</h2>
+      <table>
+        <thead><tr><th>Feed</th><th>Licence</th><th>Access path</th></tr></thead>
+        <tbody>
+          <tr><td>NOBIL (SE/NO)</td><td>CC BY 4.0</td><td>API key by application (about two working days); key name <code>NOBIL_API_KEY</code></td></tr>
+          <tr><td>Mobilithek (DE, DATEX II)</td><td>Per-offer (CC0 recommended)</td><td>Organisation registration plus manual approval (days) plus X.509 mTLS material</td></tr>
+        </tbody>
+      </table>
+
+      <h2>BYOK rules</h2>
+      <ul>
+        <li>Keys arrive per request by environment or header <strong>name</strong>; concurrent callers never cross-read.</li>
+        <li>Key values are never logged, persisted, baked into git, or shipped in this Pages artifact.</li>
+        <li>Missing key answers a typed <code>UNCONFIGURED</code> skip, not a failure.</li>
+      </ul>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>

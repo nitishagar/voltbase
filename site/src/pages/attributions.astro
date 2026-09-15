@@ -1,0 +1,58 @@
+---
+// voltbase attributions (S5, per-feed licences from ADR-002, Collective from
+// ADR-003). Source mirror; canonical static emit is site/build.mjs.
+const title = 'Attributions — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Per-feed licences and attribution for every row voltbase serves, plus what is excluded and why." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/" aria-current="page">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>Attributions</h1>
+      <p class="lede">Every served row carries its own source, retrieved-at and credit (IS-04); list responses additionally aggregate the per-partition credits. The served index is an ODbL <strong>Collective Database</strong> (partitioned per ADR-003), not a Derivative Database — each feed keeps its own licence.</p>
+
+      <h2>Per-feed credits</h2>
+      <table>
+        <thead><tr><th>Feed</th><th>Licence</th><th>Credit shown on rows</th></tr></thead>
+        <tbody>
+          <tr><td>Open Charge Map (open rows only)</td><td>CC BY 4.0</td><td>Operator via Open Charge Map — <a href="https://openchargemap.io">openchargemap.io</a></td></tr>
+          <tr><td>OpenStreetMap extracts</td><td>ODbL 1.0</td><td>© OpenStreetMap contributors — <a href="https://www.openstreetmap.org/copyright">openstreetmap.org/copyright</a></td></tr>
+          <tr><td>NL NDW (OCPI 2.2.1)</td><td>CC0 1.0</td><td>Operator via opendata.ndw.nu — <a href="https://opendata.ndw.nu">opendata.ndw.nu</a></td></tr>
+          <tr><td>LU Chargy KML</td><td>CC0 1.0 (KML set only)</td><td>Chargy via Chargy — <a href="https://data.public.lu/en/datasets/bornes-de-chargement-publiques-pour-voitures-electriques/">data.public.lu</a></td></tr>
+          <tr><td>FR IRVE</td><td>Licence Ouverte / Etalab 2.0</td><td>Operator via IRVE — <a href="https://transport.data.gouv.fr/datasets/base-nationale-des-irve-infrastructures-de-recharge-pour-vehicules-electriques">transport.data.gouv.fr</a></td></tr>
+          <tr><td>NOBIL (second wave)</td><td>CC BY 4.0</td><td>Via NOBIL — <a href="https://info.nobil.no/index.php/api">info.nobil.no</a> (not ingested in v0.1)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Excluded before serving</h2>
+      <ul>
+        <li>OCM provider-copyright rows (provider terms, not the CC BY user licence) — filtered via <code>opendata=true</code> before ingest.</li>
+        <li>The LU second multi-operator DATEX II set — licence Not Specified, open ticket; only the CC0 Chargy KML is ingested.</li>
+        <li>Any row with an unknown or unrecognised licence string — treated as closed, never served.</li>
+      </ul>
+      <p>Partition discipline: within one <code>(feature_type, regional_cut, source, licence)</code> cut, rows are all-OSM or all-non-OSM; serve-time code never joins across that boundary.</p>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>

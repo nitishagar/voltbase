@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/verify.sh — S4 gate chain (mirrors the lumen validate chain):
+# scripts/verify.sh — S5 gate chain (mirrors the lumen validate chain):
 # typecheck && lint && build && bundle-budget && test && smoke && check:banned,
 # then print VERIFY OK stage=<N> with the stage read live from src/lib/stage.ts.
 #

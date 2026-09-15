@@ -1,0 +1,85 @@
+---
+// voltbase API reference (S5, hand-written from packages/mcp/worker/routes.ts).
+// Snippets are contract-tested in site/tests/site-s5.test.ts. Source mirror;
+// canonical static emit is site/build.mjs.
+const title = 'API reference — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Hand-written voltbase REST reference: health, sites search, site detail, status, errors and MCP transport notes." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/" aria-current="page">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>API reference</h1>
+      <p class="lede">Hand-written from the Worker routes. Read-only, stateless, open data only. Every error uses one typed envelope: <code>{"error":{"code":"...","message":"..."}}</code>.</p>
+
+      <h2>GET /healthz</h2>
+      <p>Liveness plus the build stage marker.</p>
+      <pre><code>GET /healthz
+{"ok":true,"stage":5}</code></pre>
+
+      <h2>GET /api/v1/sites</h2>
+      <p>Search servable sites. Filters: <code>bbox</code> (<code>minLon,minLat,maxLon,maxLat</code>), <code>connector</code> (case-insensitive substring, max 64 chars), <code>minPower</code> (kW floor), <code>openOnly</code> (<code>true</code> keeps AVAILABLE rows only). Pagination: <code>limit</code> (1–100, default 20), <code>offset</code> (0–100000, default 0).</p>
+      <pre><code>GET /api/v1/sites?bbox=4.0,52.0,5.0,53.0&amp;connector=CCS2&amp;minPower=50&amp;openOnly=true&amp;limit=20&amp;offset=0
+
+{
+  "data": [{ "id": "OCM:900000", "source": "ocm", "licence": "CC-BY-4.0" }],
+  "page": { "limit": 20, "offset": 0, "total": 35 },
+  "attribution": [{ "text": "EnBW (via Open Charge Map)", "url": "https://openchargemap.io" }]
+}</code></pre>
+
+      <h2>GET /api/v1/sites/:id</h2>
+      <p>One servable site. IDs are source-prefixed (<code>OCM:900000</code>, <code>OSM:node/22000101</code>); encode the colon as <code>%3A</code>. Closed or unknown ids answer <code>NOT_FOUND</code>.</p>
+      <pre><code>GET /api/v1/sites/OCM%3A900000
+{"data": {"id": "OCM:900000", "source": "ocm", "licence": "CC-BY-4.0"}}</code></pre>
+
+      <h2>GET /api/v1/status/:id</h2>
+      <p>Live status with a stale label against the 60-minute refresh SLO. Fixture rows predate the SLO, so expect <code>stale:true</code> with a <code>staleReason</code> (serving last-good static cut).</p>
+      <pre><code>GET /api/v1/status/OCM%3A900000
+{"data": {"id": "OCM:900000", "status": "AVAILABLE",
+  "retrievedAt": "2026-09-14T06:15:00.000Z", "source": "ocm",
+  "stale": true, "staleReason": "retrievedAt 2026-09-14T06:15:00.000Z is older than the 60min refresh SLO (serving last-good static cut)",
+  "attribution": {"text": "EnBW (via Open Charge Map)", "url": "https://openchargemap.io"}}}</code></pre>
+
+      <h2>Errors</h2>
+      <table>
+        <thead><tr><th>Code</th><th>Status</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>INVALID_ARGUMENTS</td><td>400</td><td>Bad bbox, connector, minPower, limit or offset</td></tr>
+          <tr><td>UNAUTHORIZED</td><td>401</td><td>Missing or invalid API key when the free-key gate is set</td></tr>
+          <tr><td>RATE_LIMITED</td><td>429</td><td>More than 60 requests per minute per IP (retry-after header set)</td></tr>
+          <tr><td>NOT_FOUND</td><td>404</td><td>Unknown route, or unknown/closed site id (never a closed signal)</td></tr>
+          <tr><td>UPSTREAM_BLOCKED</td><td>403</td><td>Non-allowlisted or private-origin fetch refused before any fetch</td></tr>
+          <tr><td>PAYLOAD_TOO_LARGE</td><td>413</td><td>Request body over the cap, rejected before parsing</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{"error": {"code": "NOT_FOUND", "message": "unknown site id"}}</code></pre>
+
+      <h2>MCP transport</h2>
+      <p>The same four tools are served over Streamable HTTP at <code>POST /mcp</code> (use <code>tools/list</code> then <code>tools/call</code>). Non-POST methods answer the typed JSON-RPC error with status 405 — there is no session to hold. See <a href="/voltbase/mcp-onboarding/">MCP onboarding</a>.</p>
+      <pre><code>POST /mcp   # JSON-RPC tools/list, tools/call — 200
+GET /mcp    # 405 Method not allowed: use POST /mcp for Streamable HTTP (stateless)</code></pre>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>

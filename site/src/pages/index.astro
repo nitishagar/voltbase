@@ -1,6 +1,6 @@
 ---
-// voltbase landing (S1 shell). Minimal static page; the full docs site
-// (quickstart, API reference, MCP onboarding, attributions) lands in S5.
+// voltbase landing (S5). Full docs site source; the canonical static emit is
+// site/build.mjs (mirrors this copy) until `astro build` is wired.
 const title = 'voltbase — open-core EV charging-data tooling';
 ---
 <!doctype html>
@@ -10,12 +10,42 @@ const title = 'voltbase — open-core EV charging-data tooling';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content="voltbase is developer-first open-core tooling for EV charging data: normalisation library, discovery API, and MCP server over open data only." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
   </head>
   <body>
-    <main>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/" aria-current="page">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
       <h1>voltbase</h1>
-      <p>Developer-first open-core tooling for EV charging data — normalisation library, discovery API, and MCP server over open data only.</p>
-      <p>S1 scaffold: docs site shell. Full guides land in S5.</p>
-    </main>
+      <p class="lede">Developer-first open-core tooling for EV charging data — a normalisation library, a discovery API, and an MCP server over open data only.</p>
+      <div class="cta-row">
+        <a class="cta" href="/voltbase/quickstart/">Get started</a>
+        <a class="cta secondary" href="/voltbase/api-reference/">Read the API reference</a>
+      </div>
+      <h2>How it works</h2>
+      <div class="grid-3">
+        <section class="card"><h3>1. Normalise</h3><p>OCM, OSM extracts, OCPI 2.2.1 and DATEX II feeds map into one core row with a per-row source and licence partition key. Unknown licences are treated as closed and never served.</p></section>
+        <section class="card"><h3>2. Serve</h3><p>A stateless edge API serves servable rows only, each with source, retrieved-at and attribution. Stale rows carry a stale label, never silent empties.</p></section>
+        <section class="card"><h3>3. Ask</h3><p>The same four tools answer over CLI stdio (<code>voltbase mcp</code>) and over HTTP (<code>POST /mcp</code>), with typed errors where a capability is local-only.</p></section>
+      </div>
+      <h2>Pricing</h2>
+      <p><strong>Free self-serve (v0.1):</strong> everything in these docs — normalisation, discovery API and MCP over open data. <strong>Paid self-serve:</strong> placeholder — no payments, sessions or billing exist in v0.1 (see <a href="/voltbase/legal/">Legal</a>).</p>
+      <h2>Open data only</h2>
+      <p>Every example on this site uses open-licenced rows: NL NDW (CC0), LU Chargy KML (CC0), FR IRVE (Licence Ouverte / Etalab), OCM open rows (CC BY 4.0) and OSM extracts (ODbL). Provider-copyright and unclear-licence rows are excluded before serving — see <a href="/voltbase/attributions/">Attributions</a>.</p>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
   </body>
 </html>

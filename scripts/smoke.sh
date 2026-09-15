@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/smoke.sh — S4 smoke: imports the Worker app directly (no wrangler
+# scripts/smoke.sh — S5 smoke: imports the Worker app directly (no wrangler
 # dev needed) and asserts / + /healthz + search + site + status + mcp
 # (POST /mcp tools/list, GET /mcp 405), then checks the bundle-budget comment
 # in scripts/verify.sh (self-budget note, not a platform cap) and runs the

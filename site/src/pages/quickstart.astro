@@ -1,0 +1,65 @@
+---
+// voltbase quickstart (S5). Source mirror; canonical static emit is site/build.mjs.
+const title = 'Quickstart — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Install voltbase, run the Worker locally, and make your first search over open EV charging data." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/">voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/" aria-current="page">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>Quickstart</h1>
+      <p class="lede">From zero to your first open-data charging-site search in five minutes.</p>
+      <h2>1. Prerequisites</h2>
+      <ul>
+        <li>Node.js 22 or newer</li>
+        <li>npm (the repo uses npm workspaces)</li>
+        <li>No API keys, no accounts, no cloud bindings for this guide</li>
+      </ul>
+      <h2>2. Install and verify</h2>
+      <pre><code>git clone &lt;your-voltbase-mirror&gt; voltbase
+cd voltbase
+npm ci
+npm run verify   # typecheck, lint, build, test, smoke -> VERIFY OK stage=5</code></pre>
+      <h2>3. Run the Worker locally</h2>
+      <pre><code>npm run dev
+# GET /healthz answers {"ok":true,"stage":5}</code></pre>
+      <h2>4. First search (open data only)</h2>
+      <pre><code>curl 'http://localhost:8787/api/v1/sites?connector=CCS2&amp;minPower=50&amp;limit=5&amp;offset=0'</code></pre>
+      <p>The response carries <code>data</code>, page info (<code>limit</code>, <code>offset</code>, <code>total</code>) and per-partition <code>attribution</code>. Try a known open row next:</p>
+      <pre><code>curl 'http://localhost:8787/api/v1/sites/OCM%3A900000'
+curl 'http://localhost:8787/api/v1/status/OCM%3A900000'</code></pre>
+      <p>IDs use a source prefix (<code>OCM:</code>, <code>OSM:</code>); the colon must be URL-encoded as <code>%3A</code>. Unknown or closed ids answer typed <code>NOT_FOUND</code> — never a closed signal.</p>
+      <h2>5. Try the CLI</h2>
+      <pre><code>node packages/cli/bin/voltbase.js --help
+node packages/cli/bin/voltbase.js search --connector CCS2 --limit 5</code></pre>
+      <h2>Next steps</h2>
+      <ul>
+        <li><a href="/voltbase/api-reference/">API reference</a> — every route, filter and error code</li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a> — the same tools for agents over stdio and HTTP</li>
+        <li><a href="/voltbase/providers/">Providers / BYOK</a> — when you need your own OCM key</li>
+      </ul>
+    </main></div>
+    <footer class="site-foot"><div class="wrap">
+      <p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p>
+    </div></footer>
+  </body>
+</html>
