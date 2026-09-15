@@ -9,21 +9,21 @@
 
 ## 1. Status
 
-- Current stage: S7
+- Current stage: S8
 - Stage status: PASSED
-- Last verified commit: f41aafc (S6: add reliability rollups)
-- Next action: Commit `S7: add end-to-end suite, budgets, and docs`, then spawn S8 auditor (fresh-clone audit).
+- Last verified commit: 7c468e0 (S7: add end-to-end suite, budgets, and docs)
+- Next action: Commit `S8: pass clean-clone audit`, then run S13 preconditions (verify stage=8, gh auth, CF token/account, remote empty, tree clean).
 - Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S7-VERIFY (PASS r1: VERIFY OK stage=7, 130/130 tests, mutation TTFB 300→1 FAIL then green, release dry-run restores tree, remote empty)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S8-VERIFY (PASS: fresh-clone 130/130 + VERIFY OK stage=8, mutation STAGE 8→999 FAIL then green, sec clean, kill-4 no-trigger, remote empty)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S7 PASSED (lightweight e2e 6 journey + 2 unit, bundle FAIL>1.5MB, TTFB<300ms local, architecture.md + runbook.md, publish-workspaces dry-run restores tree); VERIFY OK stage=7, 130/130 tests.
+- What exists: S8 PASSED (fresh-clone install+verify+e2e green, 8 tasks re-verified with citations, ADR↔code + spec↔route full, sec scrub clean, kill-4 no-trigger); VERIFY OK stage=8, 130/130 tests. Status READY_FOR_CREDENTIALS.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request (no browser — closes LEDGER #3).
-- Gotchas: private repo ⇒ no publish/deploy; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons used, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e (no Playwright).
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call; S8 next.
+- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request; clone was file-local /tmp/voltbase-S8-audit.
+- Gotchas: private repo ⇒ no publish/deploy until S13; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e.
+- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call (all S13+ ingest-time); S13 next.
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -37,8 +37,8 @@
 | S4 | PASSED | builder | verifier r1 PASS | b96a046 | 90 | docs/ledger/S4-verify-r1.md |
 | S5 | PASSED | builder | verifier r1 PASS | 8082d1d | 102 | docs/ledger/S5-verify-r1.md |
 | S6 | PASSED | builder | verifier r1 PASS | f41aafc | 122 | docs/ledger/S6-verify-r1.md |
-| S7 | PASSED | builder | verifier r1 PASS | pending `S7: add end-to-end suite, budgets, and docs` | 130 | docs/ledger/S7-verify-r1.md |
-| S8 | NOT_STARTED | | | | | |
+| S7 | PASSED | builder | verifier r1 PASS | 7c468e0 | 130 | docs/ledger/S7-verify-r1.md |
+| S8 | PASSED | auditor (fresh clone) | verifier r1 PASS | pending `S8: pass clean-clone audit` | 130 | docs/ledger/S8-audit.md |
 | S13 | NOT_STARTED | | | | | |
 
 ## 4. Decisions
@@ -92,3 +92,4 @@
 | 2026-09-15T00:00:00Z | S5 | orchestrator-verifier | S5 verify r1 PASS: VERIFY OK stage=5, 102/102 tests (12 new site), dist 20 files 7 pages + pagefind 15592B/7 entries, no closed data, links resolve, DRAFT+DPDP, robots, static, BYOK names-only, pages.yml public-guarded, mutation legal-marker 1-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S6 | orchestrator-verifier | S6 verify r1 PASS: VERIFY OK stage=6, 122/122 tests (20 new), journal-once + rollup exact + stale + 80% guard→UPSTREAM_FAILED+cut, ≤50/≤6/1-cron, null-cache, route+tool live, no bindings, mutation guard-ratio 1-fail then green, sec-review 0 issues, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S7 | orchestrator-verifier | S7 verify r1 PASS: VERIFY OK stage=7, 130/130 tests (6 e2e + 2 unit), bundle FAIL-path + TTFB local OK, release dry-run 12-edits restores tree, arch+runbook present, mutation TTFB 300→1 FAIL then green, remote empty, no publish | PASS | pending |
+| 2026-09-15T00:00:00Z | S8 | orchestrator-verifier | S8 verify r1 PASS: fresh-clone 130/130 + VERIFY OK stage=8, 8 tasks cited, ADR↔code + spec↔route full, sec clean, kill-4 no-trigger, mutation STAGE 8→999 FAIL then green, remote empty → READY_FOR_CREDENTIALS | PASS | pending |
