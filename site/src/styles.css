@@ -1,24 +1,101 @@
-/* voltbase docs stylesheet (S5) — single hand-written file, no build step (ADR-001 CSS default). */
+/* voltbase docs stylesheet (S14) — single hand-written file, no build step
+   (ADR-001 CSS default). Theme: pi.dev-inspired dark-first editorial-terminal
+   look — serif body/display, monospace accents, steel-blue on near-black.
+   Fonts are self-hosted OFL files under /voltbase/fonts/ (licences shipped
+   beside them in site/src/fonts/). Light scheme is a CSS-only override of the
+   same tokens via prefers-color-scheme (the artifact gate forbids <script>,
+   so pi.dev's JS toggle is not portable — token values are AA-adjusted). */
 :root {
-  --ink: #14202b;
-  --muted: #51606f;
-  --line: #d9e1e8;
-  --wash: #f4f7f9;
-  --accent: #0b6e4f;
-  --accent-ink: #ffffff;
-  --warn-bg: #fff8e6;
-  --warn-line: #d9a400;
-  --code-bg: #eef2f5;
-  --max: 46rem;
+  color-scheme: dark;
+  --bg-deep: #0d1116;
+  --bg-canvas: #161d27;
+  --ink: #ebe7e4;
+  --text: #d5d8db;
+  --muted: #9fa4ab;
+  --line: #49505980;
+  --line-strong: #757d89;
+  --panel: #ffffff08;
+  --accent: #6a9fcc;
+  --accent-ink: #0d1116;
+  --rust: #b86b52;
+  --warn: #e1b06e;
+  --warn-bg: #e1b06e0d;
+  --code-bg: #142433;
+  --code-ink: #d5d8db;
+  --max: 44rem;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --font-mono: "Commit Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  --font-accent: "Departure Mono", "Commit Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg-deep: #dacbc2;
+    --bg-canvas: #ebe7e4;
+    --ink: #252f3d;
+    --text: #384251;
+    --muted: #5c5752;
+    --line: #8b847d59;
+    --line-strong: #5c5752;
+    --panel: #f4f2f0;
+    --accent: #4b607c;
+    --accent-ink: #f4f2f0;
+    --rust: #844f3b;
+    --warn: #6f4d13;
+    --warn-bg: #eacd7c1f;
+    --code-bg: #eef1f3;
+    --code-ink: #252f3d;
+  }
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/voltbase/fonts/CommitMono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/voltbase/fonts/CommitMono-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Departure Mono";
+  src: url("/voltbase/fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 * { box-sizing: border-box; }
 
+html {
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   margin: 0;
+  color: var(--text);
+  background: var(--bg-canvas);
+  font: 1rem/1.6 var(--font-serif);
+}
+
+::selection {
+  background: #4b607c40;
   color: var(--ink);
-  background: #ffffff;
-  font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .skip {
@@ -29,13 +106,15 @@ body {
 .skip:focus {
   left: 0.5rem;
   top: 0.5rem;
-  background: var(--accent-ink);
+  background: var(--accent);
+  color: var(--accent-ink);
   padding: 0.5rem;
+  font-family: var(--font-accent);
 }
 
 .site-head {
   border-bottom: 1px solid var(--line);
-  background: var(--wash);
+  background: var(--bg-deep);
 }
 
 .site-head .wrap,
@@ -45,29 +124,53 @@ body {
   padding: 1rem 1.25rem;
 }
 
+.site-head .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.5rem;
+}
+
 .brand {
-  font-weight: 700;
+  font-family: var(--font-accent);
+  font-weight: 400;
   color: var(--ink);
   text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+.brand-glyph {
+  color: var(--accent);
 }
 
 nav ul {
   list-style: none;
-  margin: 0.5rem 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1rem;
+  gap: 0.25rem 1.1rem;
 }
 
 nav a {
-  color: var(--accent);
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+}
+
+nav a:hover,
+nav a:focus-visible {
+  color: var(--ink);
 }
 
 nav a[aria-current="page"] {
-  font-weight: 700;
-  text-decoration: none;
   color: var(--ink);
+  border-bottom-color: var(--accent);
 }
 
 main img {
@@ -75,71 +178,148 @@ main img {
 }
 
 h1, h2, h3 {
+  font-family: var(--font-serif);
+  color: var(--ink);
   line-height: 1.25;
+  font-weight: 700;
+}
+
+main > h1:first-child {
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  margin: 2.25rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p, ul, ol {
+  margin: 0.75rem 0;
 }
 
 .lede {
-  font-size: 1.125rem;
+  font-size: 1.2rem;
   color: var(--muted);
+  line-height: 1.6;
+}
+
+main > .lede {
+  margin-bottom: 1.75rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--ink);
 }
 
 .notice {
-  border: 1px solid var(--warn-line);
+  border: 1px solid var(--rust);
+  border-left-width: 3px;
   background: var(--warn-bg);
+  color: var(--text);
   padding: 0.75rem 1rem;
   border-radius: 0.25rem;
+}
+
+.notice strong {
+  color: var(--warn);
 }
 
 pre {
   background: var(--code-bg);
   border: 1px solid var(--line);
-  padding: 0.75rem 1rem;
+  color: var(--code-ink);
+  padding: 0.85rem 1rem;
   overflow-x: auto;
   border-radius: 0.25rem;
+  font: 0.82rem/1.6 var(--font-mono);
 }
 
 code {
-  font: 0.875rem/1.5 ui-monospace, "Cascadia Code", Menlo, monospace;
+  font: 0.82em/1.5 var(--font-mono);
+}
+
+pre code {
+  font-size: inherit;
+}
+
+p code, li code, td code {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0.2rem;
+  padding: 0.05em 0.3em;
 }
 
 table {
   border-collapse: collapse;
   width: 100%;
   margin: 1rem 0;
+  font-size: 0.9rem;
 }
 
 th, td {
-  border: 1px solid var(--line);
-  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.55rem 0.75rem;
   text-align: left;
   vertical-align: top;
 }
 
 th {
-  background: var(--wash);
+  font-family: var(--font-accent);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--panel);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .cta-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin: 1.25rem 0;
+  margin: 1.5rem 0;
 }
 
 .cta {
   display: inline-block;
+  font-family: var(--font-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   background: var(--accent);
   color: var(--accent-ink);
-  padding: 0.6rem 1.1rem;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid var(--accent);
   border-radius: 0.25rem;
   text-decoration: none;
-  font-weight: 700;
+}
+
+.cta:hover,
+.cta:focus-visible {
+  color: var(--accent-ink);
+  border-color: var(--line-strong);
 }
 
 .cta.secondary {
   background: transparent;
   color: var(--accent);
-  border: 2px solid var(--accent);
+}
+
+.cta.secondary:hover,
+.cta.secondary:focus-visible {
+  color: var(--ink);
 }
 
 .grid-3 {
@@ -152,18 +332,33 @@ th {
 .card {
   border: 1px solid var(--line);
   border-radius: 0.25rem;
-  padding: 0.75rem 1rem;
-  background: #ffffff;
+  padding: 0.85rem 1.05rem;
+  background: var(--panel);
 }
 
 .card h3 {
   margin-top: 0;
+  font-size: 1rem;
+}
+
+.card p {
+  margin: 0.5rem 0 0;
+  font-size: 0.92rem;
 }
 
 footer.site-foot {
   border-top: 1px solid var(--line);
-  background: var(--wash);
-  margin-top: 2rem;
-  font-size: 0.875rem;
+  background: var(--bg-deep);
+  margin-top: 3rem;
+  font-size: 0.85rem;
   color: var(--muted);
+}
+
+footer.site-foot a {
+  color: var(--muted);
+}
+
+footer.site-foot a:hover,
+footer.site-foot a:focus-visible {
+  color: var(--ink);
 }

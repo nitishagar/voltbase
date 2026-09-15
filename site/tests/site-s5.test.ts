@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
@@ -195,5 +196,61 @@ describe('site S5 gates', () => {
     ]) {
       expect(page, `mcp-onboarding missing ${token}`).toContain(token);
     }
+  });
+
+  // S14 additions — the re-theme introduced self-hosted font assets and a
+  // second colour scheme; these close the surface the original gates did
+  // not cover (CSS url() targets + OFL licences, @import, artifact size,
+  // head integrity/structural anchors). Strengthened per TEST_VALIDATION.
+
+  it('self-hosted fonts resolve inside dist and ship their OFL licences (no external runtime loads)', () => {
+    const css = readFileSync(join(dist, 'styles.css'), 'utf8');
+    const urls = [...css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((m) => m[1] ?? '');
+    expect(urls.length).toBeGreaterThan(0);
+    for (const raw of urls) {
+      const path = raw.split('#')[0]?.split('?')[0] ?? '';
+      expect(path.startsWith('/voltbase/'), `non-site url() target ${raw}`).toBe(true);
+      const target = join(dist, path.slice('/voltbase/'.length));
+      expect(existsSync(target), `css url() -> missing ${raw}`).toBe(true);
+    }
+    for (const name of ['LICENSE-CommitMono.txt', 'LICENSE-DepartureMono.txt']) {
+      const licence = join(dist, 'fonts', name);
+      expect(existsSync(licence), `missing ${name}`).toBe(true);
+      expect(readFileSync(licence, 'utf8')).toMatch(/SIL Open Font License/i);
+    }
+  });
+
+  it('stylesheet has no @import (artifact stays single-file static css)', () => {
+    const css = readFileSync(join(dist, 'styles.css'), 'utf8');
+    expect(css).not.toMatch(/@import/i);
+  });
+
+  it('dist stays inside the 1.5 MiB self-budget (summed gzip bytes)', () => {
+    const CAP_BYTES = 1572864;
+    const files: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else files.push(full);
+      }
+    };
+    walk(dist);
+    const total = files.reduce((sum, f) => sum + gzipSync(readFileSync(f)).length, 0);
+    expect(total).toBeLessThanOrEqual(CAP_BYTES);
+  });
+
+  it('every page declares head integrity and structural anchors (IS-B/IS-D/IS-G)', () => {
+    for (const slug of SLUGS) {
+      const html = readHtml(slug);
+      expect(html).toContain('<meta charset="utf-8"');
+      expect(html).toContain('name="viewport"');
+      expect(html).toContain('<base href="/voltbase/" />');
+      expect(html).toContain('class="skip"');
+      expect(html).toContain('aria-current="page"');
+      expect(html).toContain('site-foot');
+    }
+    const css = readFileSync(join(dist, 'styles.css'), 'utf8');
+    expect(css).toContain(':focus-visible');
   });
 });

@@ -53,7 +53,7 @@ const FOOT =
   '(includes the DPDP Act 2023 note for India data).</p></div></footer>';
 
 const navFor = (slug) =>
-  '<header class="site-head"><div class="wrap"><a class="brand" href="/voltbase/">voltbase</a>' +
+  '<header class="site-head"><div class="wrap"><a class="brand" href="/voltbase/"><span class="brand-glyph" aria-hidden="true">❯</span> voltbase</a>' +
   '<nav aria-label="Docs"><ul>' +
   NAV.map(([href, label, key]) =>
     `<li><a href="${href}"${key === slug ? ' aria-current="page"' : ''}>${label}</a></li>`,
@@ -352,6 +352,14 @@ for (const [slug, page] of Object.entries(PAGES)) {
 }
 
 copyFileSync(join(here, 'src', 'styles.css'), join(outDir, 'styles.css'));
+// Self-hosted OFL fonts referenced by styles.css @font-face; the OFL licence
+// texts ship beside them (redistribution requirement). A missing source file
+// throws ENOENT here — the gate suite then re-checks the emitted targets.
+const fontsOut = join(outDir, 'fonts');
+mkdirSync(fontsOut, { recursive: true });
+for (const entry of readdirSync(join(here, 'src', 'fonts'))) {
+  copyFileSync(join(here, 'src', 'fonts', entry), join(fontsOut, entry));
+}
 writeFileSync(join(outDir, 'robots.txt'), ROBOTS);
 
 const indexKind = buildIndex(join(outDir, 'pagefind'));
