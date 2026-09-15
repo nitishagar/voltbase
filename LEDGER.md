@@ -9,21 +9,21 @@
 
 ## 1. Status
 
-- Current stage: S6
+- Current stage: S7
 - Stage status: PASSED
-- Last verified commit: 8082d1d (S5: add docs site and landing (local preview))
-- Next action: Commit `S6: add reliability rollups`, then spawn S7 builder (e2e, budgets, docs).
+- Last verified commit: f41aafc (S6: add reliability rollups)
+- Next action: Commit `S7: add end-to-end suite, budgets, and docs`, then spawn S8 auditor (fresh-clone audit).
 - Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S6-VERIFY (PASS r1: VERIFY OK stage=6, 122/122 tests, mutation guard-ratio 1-fail then green, sec 0 issues, remote empty)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S7-VERIFY (PASS r1: VERIFY OK stage=7, 130/130 tests, mutation TTFB 300→1 FAIL then green, release dry-run restores tree, remote empty)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S6 PASSED (hourly poller transition-only journal + uptime rollups + 80% KV/D1 guard → UPSTREAM_FAILED + last-good artifact + stale, 1 cron, null-cache preserved, reliability route+tool live); VERIFY OK stage=6, 122/122 tests.
+- What exists: S7 PASSED (lightweight e2e 6 journey + 2 unit, bundle FAIL>1.5MB, TTFB<300ms local, architecture.md + runbook.md, publish-workspaces dry-run restores tree); VERIFY OK stage=7, 130/130 tests.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; memory journal/budget per-invocation (no KV/D1 bindings); last-good artifact checked in; no live fetch.
-- Gotchas: private repo ⇒ no publish; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 5 crons (1 used), 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; sec-review 0 issues.
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call; S7 next (e2e tool still open per LEDGER #3 → lightweight chosen).
+- What is faked locally: site/dist local build; memory journal/budget; last-good artifact; e2e via app.request (no browser — closes LEDGER #3).
+- Gotchas: private repo ⇒ no publish/deploy; `private:true`; Worker stateless; sequential; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 1/5 crons used, 6 concurrent, 50 subreq; OCM BYOK; OSM extracts only.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned; lightweight e2e (no Playwright).
+- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM keyed call; S8 next.
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -36,8 +36,8 @@
 | S3 | PASSED | builder | verifier r1 PASS | 8e27526 | 69 | docs/ledger/S3-verify-r1.md |
 | S4 | PASSED | builder | verifier r1 PASS | b96a046 | 90 | docs/ledger/S4-verify-r1.md |
 | S5 | PASSED | builder | verifier r1 PASS | 8082d1d | 102 | docs/ledger/S5-verify-r1.md |
-| S6 | PASSED | builder | verifier r1 PASS | pending `S6: add reliability rollups` | 122 | docs/ledger/S6-verify-r1.md |
-| S7 | NOT_STARTED | | | | | |
+| S6 | PASSED | builder | verifier r1 PASS | f41aafc | 122 | docs/ledger/S6-verify-r1.md |
+| S7 | PASSED | builder | verifier r1 PASS | pending `S7: add end-to-end suite, budgets, and docs` | 130 | docs/ledger/S7-verify-r1.md |
 | S8 | NOT_STARTED | | | | | |
 | S13 | NOT_STARTED | | | | | |
 
@@ -91,3 +91,4 @@
 | 2026-09-15T00:00:00Z | S4 | orchestrator-verifier | S4 verify r1 PASS: VERIFY OK stage=4, 90/90 tests (21 new: server 12 + worker-mcp 5 + cli-mcp 4), 4 tools identical stdio/HTTP, key isolation, LOCAL_ONLY→CLI, bad-args typed, after= newer-only, POST 200/GET 405, mutation tool-rename 5-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S5 | orchestrator-verifier | S5 verify r1 PASS: VERIFY OK stage=5, 102/102 tests (12 new site), dist 20 files 7 pages + pagefind 15592B/7 entries, no closed data, links resolve, DRAFT+DPDP, robots, static, BYOK names-only, pages.yml public-guarded, mutation legal-marker 1-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S6 | orchestrator-verifier | S6 verify r1 PASS: VERIFY OK stage=6, 122/122 tests (20 new), journal-once + rollup exact + stale + 80% guard→UPSTREAM_FAILED+cut, ≤50/≤6/1-cron, null-cache, route+tool live, no bindings, mutation guard-ratio 1-fail then green, sec-review 0 issues, remote empty | PASS | pending |
+| 2026-09-15T00:00:00Z | S7 | orchestrator-verifier | S7 verify r1 PASS: VERIFY OK stage=7, 130/130 tests (6 e2e + 2 unit), bundle FAIL-path + TTFB local OK, release dry-run 12-edits restores tree, arch+runbook present, mutation TTFB 300→1 FAIL then green, remote empty, no publish | PASS | pending |

@@ -1,7 +1,7 @@
 /**
- * voltbase Worker (S6): the thin remote surface.
+ * voltbase Worker (S7): the thin remote surface.
  * - `GET /` — static landing fragment (contains "voltbase").
- * - `GET /healthz` — `{"ok":true,"stage":6}` with STAGE from src/lib/stage.ts.
+ * - `GET /healthz` — `{"ok":true,"stage":7}` with STAGE from src/lib/stage.ts.
  * - `GET /api/v1/sites?...` — bbox / connector / minPower / openOnly filters
  *   with limit/offset pagination over the in-memory fixture index.
  * - `GET /api/v1/sites/:id` — one servable site (closed/self ids ⇒ 404).
@@ -147,7 +147,7 @@ export const createApp = (
   app.get('/', (c) =>
     c.html(
       '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>voltbase</title></head>' +
-        '<body><h1>voltbase</h1><p>open-core EV charging-data tooling (stage 6 API + MCP)</p></body></html>',
+        '<body><h1>voltbase</h1><p>open-core EV charging-data tooling (stage 7 API + MCP)</p></body></html>',
     ),
   );
 

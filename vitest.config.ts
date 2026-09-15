@@ -5,7 +5,8 @@ import { defineConfig } from 'vitest/config';
  * Vitest 4 style: `projects` pointing at per-package config files (no
  * deprecated workspace file). Node pool (unit) + @cloudflare/vitest-plugin
  * workers pool (workerd) both run here; the plain-node project covers the
- * zero-dependency `test/*.test.mjs` gates.
+ * zero-dependency `test/*.test.mjs` gates; the e2e project covers the S7
+ * lightweight suite (`tests/**`, node + vitest, no browser).
  */
 export default defineConfig({
   test: {
@@ -21,6 +22,13 @@ export default defineConfig({
           name: 'plain-node',
           environment: 'node',
           include: ['test/**/*.test.mjs'],
+        },
+      },
+      {
+        test: {
+          name: 'e2e',
+          environment: 'node',
+          include: ['tests/**/*.test.ts'],
         },
       },
     ],

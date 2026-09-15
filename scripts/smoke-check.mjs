@@ -2,7 +2,7 @@
 /**
  * scripts/smoke-check.mjs — zero-dependency route smoke for `scripts/smoke.sh`.
  * Imports the Worker Hono app directly (no `wrangler dev` needed) and asserts
- * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":5}) + the S3
+ * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":7}) + the S3
  * API slice: search (/api/v1/sites), site detail, and status (stale-labelled,
  * fixtures predate the 60min SLO) with security + request-id headers present
  * + the S4 MCP slice: POST /mcp tools/list (4 locked tools) and GET /mcp 405.
@@ -32,7 +32,7 @@ try {
 }
 check(hz.status === 200, `GET /healthz status ${hz.status}, expected 200`);
 check(body !== null && body.ok === true && body.stage === STAGE, `GET /healthz body ${JSON.stringify(body)}, expected {"ok":true,"stage":${String(STAGE)}}`);
-check(STAGE === 6, `STAGE ${String(STAGE)}, expected 6`);
+check(STAGE === 7, `STAGE ${String(STAGE)}, expected 7`);
 
 const search = await app.request('/api/v1/sites?limit=5&offset=0');
 let searchBody = null;

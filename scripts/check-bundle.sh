@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# scripts/check-bundle.sh — S3 worker bundle self-budget gate.
+# scripts/check-bundle.sh — S7 hardened worker bundle self-budget gate.
 #
-# Fails when the gzipped Worker sources exceed 1.5 MiB. The 1.5 MB gzip budget
+# FAILS (exit 1 + FAIL message) when the gzipped Worker sources exceed
+# 1.5 MiB. The 1.5 MB gzip budget
 # is a voltbase self-imposed cold-start choice, NOT a platform cap (platform:
 # 64 MiB uncompressed). Until the worker build emits a dist bundle, this gates
 # the source proxy (worker + its in-repo imports); S6+ swaps the measured path

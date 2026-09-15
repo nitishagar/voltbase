@@ -11,6 +11,7 @@
     "packages/mcp/*.config.ts",
     "packages/*/vitest.config.ts",
     "site/tests/**/*.ts",
+    "tests/**/*.ts",
     "vitest.config.ts",
     "vitest.shared.ts"
   ]
