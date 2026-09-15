@@ -6,6 +6,7 @@
   "include": [
     "src/**/*.ts",
     "packages/*/src/**/*.ts",
+    "packages/normalise/fixtures/**/*.ts",
     "packages/mcp/worker/**/*.ts",
     "packages/mcp/*.config.ts",
     "packages/*/vitest.config.ts",

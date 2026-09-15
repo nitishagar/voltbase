@@ -10,6 +10,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
+      'packages/core/vitest.config.ts',
+      'packages/normalise/vitest.config.ts',
       'packages/mcp/vitest.config.ts',
       'packages/mcp/vitest.worker.config.ts',
       'site/vitest.config.ts',

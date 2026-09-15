@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# scripts/verify.sh — S1 gate chain (mirrors the lumen validate chain):
-# typecheck && lint && build && test && smoke && check:banned.
+# scripts/verify.sh — S2 gate chain (mirrors the lumen validate chain):
+# typecheck && lint && build && test && smoke && check:banned, then print
+# VERIFY OK stage=<N> with the stage read live from src/lib/stage.ts.
 #
 # Bundle note: the 1.5 MB gzip worker budget is a voltbase self-imposed
 # cold-start budget, NOT a platform cap (platform: 64 MiB uncompressed).

@@ -6,9 +6,9 @@ import { app } from './index.ts';
  * answers /healthz inside the isolate with zero live network.
  */
 describe('S1 worker pool smoke', () => {
-  it('GET /healthz answers {"ok":true,"stage":1} in workerd', async () => {
+  it('GET /healthz answers {"ok":true,"stage":2} in workerd', async () => {
     const res = await app.request('/healthz');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, stage: 1 });
+    expect(await res.json()).toEqual({ ok: true, stage: 2 });
   });
 });

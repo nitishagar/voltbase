@@ -2,7 +2,7 @@
 /**
  * scripts/smoke-check.mjs — zero-dependency route smoke for `scripts/smoke.sh`.
  * Imports the Worker Hono app directly (no `wrangler dev` needed) and asserts
- * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":1}).
+ * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":2}).
  */
 import { app } from '../packages/mcp/worker/index.ts';
 import { STAGE } from '../src/lib/stage.ts';
@@ -29,7 +29,7 @@ try {
 }
 check(hz.status === 200, `GET /healthz status ${hz.status}, expected 200`);
 check(body !== null && body.ok === true && body.stage === STAGE, `GET /healthz body ${JSON.stringify(body)}, expected {"ok":true,"stage":${String(STAGE)}}`);
-check(STAGE === 1, `STAGE ${String(STAGE)}, expected 1`);
+  check(STAGE === 2, `STAGE ${String(STAGE)}, expected 2`);
 
 if (failed) process.exit(1);
 process.stdout.write('smoke-check: / + /healthz green\n');

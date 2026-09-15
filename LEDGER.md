@@ -9,30 +9,30 @@
 
 ## 1. Status
 
-- Current stage: S1
+- Current stage: S2
 - Stage status: PASSED
-- Last verified commit: 5c98f8e (S0: choose stack and feeds)
-- Next action: Commit `S1: scaffold app, tooling, and verification gates`, then spawn S2 builder (normalisation core + fixtures).
+- Last verified commit: 95e1f60 (S1: scaffold app, tooling, and verification gates)
+- Next action: Commit `S2: add normalisation core and fixtures`, then spawn S3 builder (public REST API + abuse controls).
 - Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S1-VERIFY (PASS r1: VERIFY OK stage=1, 10/10 tests, mutation STAGE 1→999 failed-then-green, remote empty)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S2-VERIFY (PASS r1: VERIFY OK stage=2, 37/37 tests, mutation isServable→true 7-fail then green, remote empty)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S1 PASSED (scaffold: Hono / + /healthz stage=1, 5 pkgs + CLI --help, site/dist, scripts verify/smoke/check-banned, ci no-deploy); `npm run verify` → VERIFY OK stage=1, 10/10 tests.
+- What exists: S2 PASSED (core types + partition key + ULID/time, 4 mappers + licence filter unknown⇒closed, fixtures 30 EU + 10 India with closed proofs); VERIFY OK stage=2, 37/37 tests.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist via local build script (no publish while private); no KV/D1 (stateless, ADR-gated).
-- Gotchas: private repo ⇒ Pages local-preview only; `private:true`; Worker stateless; sequential agents; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self-budget); D1 hard-fail; 5 crons, 6 concurrent; OCM BYOK; OSM extracts only; NL CC0 site-wide.
-- Decisions: Hono default (105 vs 100, margin<10 itty fallback); npm; NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned (feature_type, regional_cut, source, licence).
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi keyed call; S2 next.
-- Parallel work in flight: none (sequential; stay-sequential confirmed 2026-09-15).
+- What is faked locally: site/dist local build; no KV/D1 (stateless); fixtures deterministic, no live fetch.
+- Gotchas: private repo ⇒ Pages local-preview only; `private:true`; Worker stateless; sequential agents; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 5 crons, 6 concurrent; OCM BYOK; OSM extracts only; NL CC0 site-wide.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned (feature_type, regional_cut, source, licence), closed never served.
+- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi keyed call; S3 next.
+- Parallel work in flight: none (sequential).
 
 ## 3. Stage table
 
 | Stage | Status | Builder | Verifier rounds | Final commit | Tests total | Report |
 |---|---|---|---|---|---|---|
 | S0 | PASSED | architect | verifier 1 round PASS | 5c98f8e | 0 | docs/ledger/S0-ARCH-brief.md |
-| S1 | PASSED | builder | verifier r1 PASS | pending `S1: scaffold app, tooling, and verification gates` | 10 | docs/ledger/S1-verify-r1.md |
-| S2 | NOT_STARTED | | | | | |
+| S1 | PASSED | builder | verifier r1 PASS | 95e1f60 | 10 | docs/ledger/S1-verify-r1.md |
+| S2 | PASSED | builder | verifier r1 PASS | pending `S2: add normalisation core and fixtures` | 37 | docs/ledger/S2-verify-r1.md |
 | S3 | NOT_STARTED | | | | | |
 | S4 | NOT_STARTED | | | | | |
 | S5 | NOT_STARTED | | | | | |
@@ -86,3 +86,4 @@
 | 2026-09-14T16:30:00Z | S0 | research-verifier | verification pass 8 (exhaustive per-claim, 6 seam agents + main-context + live fetch): 5 citation fixes applied inline (remote :111-112, builder :113-117, BYOK :1-9/:39-42, README :8+:19, build-vs-measure dates); 4 Seam-E refutations REJECTED (#237 DATEX II stands vs #245 OCPI; NAPSPAN pricing live; Cloudflare-vs-GitHub Pages confusion; eur-lex fetchable); 0 intent changes, 0 plan logic changes | ok | — |
 | 2026-09-15T00:00:00Z | S0 | orchestrator-verifier | S0-ARCH verify PASS: 6 files 115/200 lines, env.md names-only (0 values), rubric recompute OK (Hono 105/itty 100/plain 79/Rust 54/Go 43), W1 math recompute OK (1440/d, KV 4.3x, D1 2.88M=29x, hourly-full 144k>100k, transitions ~7k/d), remote empty, docs/ untracked, LEDGER §§1-3 rewritten | PASS | pending |
 | 2026-09-15T00:00:00Z | S1 | orchestrator-verifier | S1 verify r1 PASS: VERIFY OK stage=1, 10/10 tests (6/6 minimums), exact pins 11/11, wrangler voltbase-api + 2026-08-04 + global_fetch_strictly_public no KV/D1, CI no-deploy, mutation STAGE 1→999 1-fail then green, remote empty | PASS | pending |
+| 2026-09-15T00:00:00Z | S2 | orchestrator-verifier | S2 verify r1 PASS: VERIFY OK stage=2, 37/37 tests (27 new: core 8 + normalise 13 + fixtures 6), partition key enforced, unknown⇒closed, closed never servable, fixtures 30+10, idempotent renormalise, attribution preserved, mutation isServable→true 7-fail then green, remote empty | PASS | pending |
