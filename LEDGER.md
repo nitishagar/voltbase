@@ -14,7 +14,7 @@
 - Last verified commit: 72477be (S8: pass clean-clone audit)
 - Next action: Provide `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (via env, never in git), then: `wrangler secret` + `wrangler deploy` + public flip + Pages check + tag `v0.1.0`. See docs/ledger/S13-partial.md §BLOCKED.
 - Blocked on: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (both absent); OCM_API_KEY value (live check); branch protection needs Pro/public (HTTP 403 while private-free)
-- Updated: 2026-09-15T00:00:00Z by orchestrator S13-VERIFY r2 (PASS-PARTIAL: VERIFY OK stage=8, 130/130, remote origin private, dry-run exit 0, no flip/tag/deploy)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S13-VERIFY r2 (PASS-PARTIAL: VERIFY OK stage=8, 130/130, remote origin private pushed 8e213db, dry-run exit 0, no flip/tag/deploy)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
@@ -39,7 +39,7 @@
 | S6 | PASSED | builder | verifier r1 PASS | f41aafc | 122 | docs/ledger/S6-verify-r1.md |
 | S7 | PASSED | builder | verifier r1 PASS | 7c468e0 | 130 | docs/ledger/S7-verify-r1.md |
 | S8 | PASSED | auditor (fresh clone) | verifier r1 PASS | 72477be | 130 | docs/ledger/S8-audit.md |
-| S13 | PARTIAL | builder | verifier r1 BLOCKED (gate-trip) → r2 PASS-PARTIAL | pending `S13: private push, deploy blocked` | 130 | docs/ledger/S13-partial.md |
+| S13 | PARTIAL | builder | verifier r1 BLOCKED (gate-trip) → r2 PASS-PARTIAL | 8e213db (partial record, pushed private) | 130 | docs/ledger/S13-partial.md |
 
 ## 4. Decisions
 
