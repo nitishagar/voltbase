@@ -2,7 +2,9 @@
 /**
  * scripts/smoke-check.mjs — zero-dependency route smoke for `scripts/smoke.sh`.
  * Imports the Worker Hono app directly (no `wrangler dev` needed) and asserts
- * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":2}).
+ * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":3}) + the S3
+ * API slice: search (/api/v1/sites), site detail, and status (stale-labelled,
+ * fixtures predate the 60min SLO) with security + request-id headers present.
  */
 import { app } from '../packages/mcp/worker/index.ts';
 import { STAGE } from '../src/lib/stage.ts';
@@ -29,7 +31,52 @@ try {
 }
 check(hz.status === 200, `GET /healthz status ${hz.status}, expected 200`);
 check(body !== null && body.ok === true && body.stage === STAGE, `GET /healthz body ${JSON.stringify(body)}, expected {"ok":true,"stage":${String(STAGE)}}`);
-  check(STAGE === 2, `STAGE ${String(STAGE)}, expected 2`);
+check(STAGE === 3, `STAGE ${String(STAGE)}, expected 3`);
+
+const search = await app.request('/api/v1/sites?limit=5&offset=0');
+let searchBody = null;
+try {
+  searchBody = await search.json();
+} catch {
+  searchBody = null;
+}
+check(search.status === 200, `GET /api/v1/sites status ${search.status}, expected 200`);
+check(
+  searchBody !== null && Array.isArray(searchBody.data) && searchBody.data.length === 5 &&
+    typeof searchBody.page?.total === 'number' && searchBody.page.total >= 30,
+  `GET /api/v1/sites body ${JSON.stringify(searchBody)?.slice(0, 200)}, expected 5 rows + page.total`,
+);
+check(
+  search.headers.get('content-security-policy')?.includes("frame-ancestors 'none'") === true,
+  'GET /api/v1/sites missing content-security-policy',
+);
+check(
+  typeof search.headers.get('x-request-id') === 'string' && search.headers.get('x-request-id') !== '',
+  'GET /api/v1/sites missing x-request-id',
+);
+
+const site = await app.request('/api/v1/sites/OCM%3A900000');
+let siteBody = null;
+try {
+  siteBody = await site.json();
+} catch {
+  siteBody = null;
+}
+check(site.status === 200, `GET /api/v1/sites/:id status ${site.status}, expected 200`);
+check(siteBody?.data?.id === 'OCM:900000', `GET /api/v1/sites/:id body ${JSON.stringify(siteBody)?.slice(0, 200)}, expected OCM:900000`);
+
+const status = await app.request('/api/v1/status/OCM%3A900000');
+let statusBody = null;
+try {
+  statusBody = await status.json();
+} catch {
+  statusBody = null;
+}
+check(status.status === 200, `GET /api/v1/status/:id status ${status.status}, expected 200`);
+check(
+  statusBody?.data?.stale === true && typeof statusBody?.data?.staleReason === 'string',
+  `GET /api/v1/status/:id body ${JSON.stringify(statusBody)?.slice(0, 200)}, expected stale:true + reason`,
+);
 
 if (failed) process.exit(1);
-process.stdout.write('smoke-check: / + /healthz green\n');
+process.stdout.write('smoke-check: / + /healthz + search + site + status green\n');

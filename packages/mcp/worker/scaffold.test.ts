@@ -10,11 +10,11 @@ import { app } from './index.ts';
  * no-persistence documented skip, Pages artifact, CLI --help smoke.
  */
 describe('S1 scaffold gates', () => {
-  it('GET /healthz returns {"ok":true,"stage":2}', async () => {
+  it('GET /healthz returns {"ok":true,"stage":3}', async () => {
     const res = await app.request('/healthz');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, stage: 2 });
-    expect(STAGE).toBe(2);
+    expect(await res.json()).toEqual({ ok: true, stage: 3 });
+    expect(STAGE).toBe(3);
   });
 
   it('GET / contains voltbase', async () => {

@@ -9,21 +9,21 @@
 
 ## 1. Status
 
-- Current stage: S2
+- Current stage: S3
 - Stage status: PASSED
-- Last verified commit: 95e1f60 (S1: scaffold app, tooling, and verification gates)
-- Next action: Commit `S2: add normalisation core and fixtures`, then spawn S3 builder (public REST API + abuse controls).
+- Last verified commit: 7d5e7d0 (S2: add normalisation core and fixtures)
+- Next action: Commit `S3: add public discovery API and abuse controls`, then spawn S4 builder (MCP server and CLI).
 - Blocked on: none
-- Updated: 2026-09-15T00:00:00Z by orchestrator S2-VERIFY (PASS r1: VERIFY OK stage=2, 37/37 tests, mutation isServable→true 7-fail then green, remote empty)
+- Updated: 2026-09-15T00:00:00Z by orchestrator S3-VERIFY (PASS r1: VERIFY OK stage=3, 69/69 tests, mutation isBlockedHost→false 1-fail then green, remote empty)
 
 ## 2. Context capsule (at most 15 lines; rewrite, do not append)
 
-- What exists: S2 PASSED (core types + partition key + ULID/time, 4 mappers + licence filter unknown⇒closed, fixtures 30 EU + 10 India with closed proofs); VERIFY OK stage=2, 37/37 tests.
+- What exists: S3 PASSED (REST /api/v1/sites search/detail/status + stale-label, key-gate + IP ratelimit + allowlist/capping/SSRF-guard + BYOK + CORS + sec-headers + request-id, bundle gate 26915B); VERIFY OK stage=3, 69/69 tests.
 - How to run it: `npm install && npm run verify`.
-- What is faked locally: site/dist local build; no KV/D1 (stateless); fixtures deterministic, no live fetch.
+- What is faked locally: site/dist local build; no KV/D1 (memory ratelimit, ADR-noted); fixture index servable-only, no live fetch.
 - Gotchas: private repo ⇒ Pages local-preview only; `private:true`; Worker stateless; sequential agents; pins TS 5.9.3/vitest 4.1.11/plugin 1.1.9/hono 4.13.7; 64 MiB cap (1.5 MB gzip self); D1 hard-fail; 5 crons, 6 concurrent; OCM BYOK; OSM extracts only; NL CC0 site-wide.
-- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned (feature_type, regional_cut, source, licence), closed never served.
-- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi keyed call; S3 next.
+- Decisions: Hono default; npm; NL→LU(CC0 KML)→FR, DE/SE-NO wave 2; hourly transition-only + 80% guard + cut-to-artifact; Collective partitioned, serve-time filter-then-serve, closed→404.
+- Open: LU 2nd DATEX II Not Specified; PT Mobi.e UNVERIFIED; OCM /v3/openapi keyed call; S4 next.
 - Parallel work in flight: none (sequential).
 
 ## 3. Stage table
@@ -32,8 +32,8 @@
 |---|---|---|---|---|---|---|
 | S0 | PASSED | architect | verifier 1 round PASS | 5c98f8e | 0 | docs/ledger/S0-ARCH-brief.md |
 | S1 | PASSED | builder | verifier r1 PASS | 95e1f60 | 10 | docs/ledger/S1-verify-r1.md |
-| S2 | PASSED | builder | verifier r1 PASS | pending `S2: add normalisation core and fixtures` | 37 | docs/ledger/S2-verify-r1.md |
-| S3 | NOT_STARTED | | | | | |
+| S2 | PASSED | builder | verifier r1 PASS | 7d5e7d0 | 37 | docs/ledger/S2-verify-r1.md |
+| S3 | PASSED | builder | verifier r1 PASS | pending `S3: add public discovery API and abuse controls` | 69 | docs/ledger/S3-verify-r1.md |
 | S4 | NOT_STARTED | | | | | |
 | S5 | NOT_STARTED | | | | | |
 | S6 | NOT_STARTED | | | | | |
@@ -87,3 +87,4 @@
 | 2026-09-15T00:00:00Z | S0 | orchestrator-verifier | S0-ARCH verify PASS: 6 files 115/200 lines, env.md names-only (0 values), rubric recompute OK (Hono 105/itty 100/plain 79/Rust 54/Go 43), W1 math recompute OK (1440/d, KV 4.3x, D1 2.88M=29x, hourly-full 144k>100k, transitions ~7k/d), remote empty, docs/ untracked, LEDGER §§1-3 rewritten | PASS | pending |
 | 2026-09-15T00:00:00Z | S1 | orchestrator-verifier | S1 verify r1 PASS: VERIFY OK stage=1, 10/10 tests (6/6 minimums), exact pins 11/11, wrangler voltbase-api + 2026-08-04 + global_fetch_strictly_public no KV/D1, CI no-deploy, mutation STAGE 1→999 1-fail then green, remote empty | PASS | pending |
 | 2026-09-15T00:00:00Z | S2 | orchestrator-verifier | S2 verify r1 PASS: VERIFY OK stage=2, 37/37 tests (27 new: core 8 + normalise 13 + fixtures 6), partition key enforced, unknown⇒closed, closed never servable, fixtures 30+10, idempotent renormalise, attribution preserved, mutation isServable→true 7-fail then green, remote empty | PASS | pending |
+| 2026-09-15T00:00:00Z | S3 | orchestrator-verifier | S3 verify r1 PASS: VERIFY OK stage=3, 69/69 tests (32 new: api 20 + guards 12), 4 routes 200, closed→404, 401/429 live, SSRF refused, stale+CSP+request-id, BYOK never stored, 0 mixed partitions, mutation isBlockedHost→false 1-fail then green, remote empty | PASS | pending |
