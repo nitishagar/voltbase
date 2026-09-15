@@ -9,9 +9,10 @@
  * - `--publish` opts in to the local mutate → `npm run build` → restore cycle.
  *   Even then there is NO registry write in v0.1 (real publish waits for the
  *   S13 public flip); the tree is restored before exit.
- * - Never runs in CI while private: with `CI` set and any manifest still
- *   carrying `private:true`, the script prints a skip line and exits 0
- *   without touching the tree.
+ * - `--publish` never runs in CI while private: with `CI` set and any manifest
+ *   still carrying `private:true`, the script prints a skip line and exits 0
+ *   without touching the tree. The dry-run is read-only, so it stays available
+ *   in CI (the S7 gate asserts its DRY-RUN output there).
  *
  * Usage:
  *   `node scripts/publish-workspaces.mjs` (dry-run)
@@ -120,8 +121,8 @@ export const runRelease = ({ publish = false } = {}) => {
   }
 
   // CI guard: never mutate or publish from CI while the tree is private.
-  if ((process.env.CI ?? '') !== '' && anyPrivate(entries)) {
-    process.stdout.write('publish-workspaces: SKIP — CI detected while private:true (no publish until the S13 public flip)\n');
+  if (publish && (process.env.CI ?? '') !== '' && anyPrivate(entries)) {
+    process.stdout.write('publish-workspaces: SKIP — CI + --publish while private:true (mutate/build/restore stays local; no registry write in v0.1)\n');
     return { ok: true, skipped: true };
   }
 
