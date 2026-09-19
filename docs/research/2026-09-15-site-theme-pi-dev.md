@@ -77,7 +77,7 @@ The voltbase site is a fully static 7-page docs artifact: one hand-written style
 
 ### Seam F — deploy + CI wiring
 - Pages workflow publishes `site/dist` on every push to master touching `site/**` (repo is public; guard skips private) — `.github/workflows/pages.yml:8-11, 25` [V]
-- CI required contexts on protected master: typecheck, lint, build, test, smoke (smoke job at `.github/workflows/ci.yml:56-64`) — `.github/workflows/ci.yml:9-64` [V] (cite corrected per audit item 20); protection strict with these 5 contexts recorded in LEDGER §2 [V — LEDGER.md:24, local-only file]
+- CI required contexts on protected master: typecheck, lint, build, test, smoke (smoke job at `.github/workflows/ci.yml:56-64`) — `.github/workflows/ci.yml:9-64` [V] (cite corrected per audit item 20); branch protection strict with these 5 contexts (verified 2026-09-15 via the branch-protection API)
 - Root scripts: `npm run build` = `node site/build.mjs`; `npm test` runs workspace vitest incl. site gate — `package.json:17-27` [V]
 - Bundle check exists but measures the WORKER, not the site: `scripts/check-bundle.sh:13` gzips `packages/mcp/worker/*.ts packages/core/src/index.ts …` (source proxy, 33,959 gz) against the 1.5 MiB self-budget — `site/dist` has NO size gate today. Actual dist measured 2026-09-15: 43,220 B raw / 27,736 B gz (advisory finding, main-context verified) [V]
 
@@ -111,7 +111,7 @@ The voltbase site is a fully static 7-page docs artifact: one hand-written style
 - Primary hard core: one cohesive re-theme (stylesheet + shared templates across 9 hand-synced files) that lands the pi.dev visual language while every zero-script/static/base-path/licensing gate stays green.
 - Audit-honesty note (item 19): two failure modes are logically independent of visual cohesion and must not be lost by the planner — (1) font-licensing legality (committing Monotype files would be a legal failure with all gates green), and (2) the licence-token/allowlist content pins (a copy edit could break them independently). They are side-constraints on the one build effort, not separate build cycles; recorded here so the plan's decomposition keeps them as explicit gates.
 
-## Evidence Ledger
+## Evidence table
 | Claim | Evidence | Trust | Load-bearing |
 |---|---|---|---|
 | build.mjs is canonical emit; astro mirrors kept in sync by hand | `site/build.mjs:2-8` | V | yes |
@@ -129,7 +129,7 @@ The voltbase site is a fully static 7-page docs artifact: one hand-written style
 | Times/Georgia as Plantin-descendant fallback; EB Garamond "closest option" | madegooddesigns.com/plantin-font | R | no |
 | Bundle budget 1.5 MiB gz; current 33,959 gz | smoke check-bundle output 2026-09-15 | V | yes |
 | Pages publishes on push to master (site/** paths) | `.github/workflows/pages.yml:8-11` | V | yes |
-| Master protected, 5 required CI contexts | `.github/workflows/ci.yml`, LEDGER.md §2 | V | yes |
+| Master protected, 5 required CI contexts | `.github/workflows/ci.yml` + branch-protection API (verified 2026-09-15) | V | yes |
 
 ## Architecture Insights
 - The site deliberately has no build-time transformation of the stylesheet and no JS at all — the "theme" is exactly styles.css + the `doc()`/`navFor()`/`FOOT` template strings; everything else is page copy. A theme change is therefore concentrated in ~3 template functions, 1 CSS file, and the mirror pass.
@@ -137,13 +137,13 @@ The voltbase site is a fully static 7-page docs artifact: one hand-written style
 - pi.dev's design tokens map cleanly onto a `:root`-variable swap in voltbase's existing token architecture (both are CSS-custom-property-driven); the delta is semantic naming and a dark surface system.
 - pi.dev body copy is serif with mono reserved for code/labels/accents — inverting voltbase's current sans-body/mono-code split is the core typographic change.
 
-## Historical Context (from thoughts/)
-- No `thoughts/` directory exists in this repo; prior stage history lives in `docs/ledger/` briefs and `LEDGER.md` (S0-S13). LEDGER §2 records: LEDGER.md is local-only since 783b891; stage reports live in docs/ledger/. Still matches current code.
+## Historical Context
+- Prior stage history is maintained in an orchestrator handoff log kept outside the published repo; nothing in `site/` depends on it.
 
 ## Coverage & Open Questions
 - Searched: 100% of site source (12 files, 1,254 lines read in full), both CI workflows, root package.json/scripts, live pi.dev HTML + full stylesheet (7,782 lines, token/base/typography regions read). Audit round 1 (of ≤2 for medium) applied: 4 modality gaps closed, 2 load-bearing [R] claims re-sourced/upgraded, spec de-smuggled.
 - Deliberately bounded: pi.dev's per-component CSS (7,000+ lines of nav/hero/docs styling) was sampled for tokens, structure and key metrics only — pixel-level cloning of its nav/hero is neither required nor attempted; the plan decides the voltbase-adapted interpretation.
-- By-history mode (audit item 4): `git log -- site/` shows only 2 commits (95e1f60 S1, 8082d1d S5) — no hidden history constraints; LEDGER.md is untracked/local-only, so its citations are locally verifiable only.
+- By-history mode (audit item 4): `git log -- site/` shows only 2 commits (95e1f60 S1, 8082d1d S5) — no hidden history constraints.
 - Font-weight count and post-port styles.css size are unbounded by any gate (audit items 18): the plan must state the intended font payload and keep the 1.5 MiB budget assertion green.
 - Open to plan: (a) fixed dark theme vs CSS-only prefers-color-scheme dual theme; (b) self-host Commit Mono/Departure Mono (with OFL licence files + build.mjs copy step) vs pure system stacks; (c) exact serif substitute choice; (d) how far to carry the terminal aesthetic (labels, badges, callouts) within the existing component vocabulary; (e) whether to also fix the pre-existing `<base href>` astro-mirror divergence (audit item 9).
 - Unconfirmed: web-licence-vs-desktop split for Plantin (unverifiable without a Monotype account) — irrelevant to the plan since Plantin files are prohibited outright.

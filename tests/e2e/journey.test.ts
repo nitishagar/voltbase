@@ -1,7 +1,7 @@
 /**
  * S7 lightweight e2e (node + vitest, NO Playwright).
  *
- * Decision closing LEDGER #3: the e2e tool is direct `createApp` over
+ * Decision (S7): the e2e tool is direct `createApp` over
  * `app.request` (no network) plus the MCP `Client` over `InMemoryTransport`
  * and `site/dist` file reads. Reason: free-tier CI carries no browser deps,
  * the seeded S2 fixtures suffice for the journey, and the Worker surfaces

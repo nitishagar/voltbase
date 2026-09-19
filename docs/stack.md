@@ -21,7 +21,7 @@ None by default — no KV/D1/DO/R2 in v0.1 until an ADR + budget math adds them 
 ## S1 mapping
 S1 owns root configs (package.json, tsconfig strict, eslint, vitest), `scripts/check-banned.sh`, `scripts/smoke.sh`, `.dev.vars.example` (names only), `.github/workflows/ci.yml` (no deploy job), `/` + `/healthz {"ok":true,"stage":1}` + `src/lib/stage.ts`, site shell. No KV/D1 until an ADR exists.
 
-## S5–S8 stage lines (proposed for S0 sign-off; closes W7 / LEDGER #9)
+## S5–S8 stage lines (proposed at S0; closes plan-validation W7)
 - S5 Depends: S4 PASSED. Extra gates: `site/dist` builds + pagefind index ≥ threshold; artifact is static, fetches nothing at runtime; all shown data open-licenced; local preview only (no publish while private); robots allow public docs; legal DRAFT markers (DPDP note for India data). Files owned: `site/**`, pages workflow scaffold (trigger-guarded until S13 flip).
 - S6 Depends: S5 PASSED + ADR-002 budget math. Extra gates: ≤5 crons / ≤6 concurrent outbound / ≤50 subrequests per cron invocation; write-guard stops at 80% of KV/D1 daily caps; null-cache default preserved on Worker; bundle ≤1.5 MB gz. Files owned: `packages/providers/src/dynamic/**`, cron entry under `packages/mcp/worker/**`, `migrations/**`.
 - S7 Depends: S6 PASSED. Extra gates: `verify` prints stage=7; bundle gate fails >1.5 MB gz; TTFB <300 ms local on `/` + `/api/v1/sites`; release script clears `private` + repoints exports to `dist/` and restores tree. Files owned: `tests/e2e/**`, size/TTFB check scripts, `docs/architecture.md`, `docs/runbook.md`, `scripts/publish-workspaces.mjs`.

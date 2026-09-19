@@ -26,7 +26,7 @@ if [ "$#" -gt 0 ]; then
 else
   while IFS= read -r -d '' f; do
     case "$f" in
-      scripts/check-banned.sh|scripts/fixtures/banned.txt|docs/ledger/*-brief.md|docs/ledger/S*-verify-*.md) continue ;;
+      scripts/check-banned.sh|scripts/fixtures/banned.txt) continue ;;
       *) files+=("$f") ;;
     esac
   done < <(git ls-files --cached --others --exclude-standard -z)

@@ -20,7 +20,7 @@ Second wave WHY: DE = registration friction + per-offer licence variance (consum
 - Guards: write-budget counters stop at 80% of KV 1k writes/d and D1 100k rows/d — never approach the hard-fail line. On stop ⇒ cut-to-artifact fallback: serve last-good prebuilt JSON cut + stale-label (S3 stale-SLO), typed UPSTREAM_FAILED per IS-06. Guard failure ⇒ closed rows, never a paid tier (IS-10).
 
 ## Open tickets
-1. LU second multi-operator DATEX II set (Feb 2026) is "License Not Specified" — clear licence before ingesting anything beyond the CC0 Chargy KML (LEDGER #10).
+1. LU second multi-operator DATEX II set (Feb 2026) is "License Not Specified" — clear licence before ingesting anything beyond the CC0 Chargy KML (open ticket, ADR-002).
 2. PT Mobi.e DATEX II endpoints (named in OCM #237 body) — licence + access UNVERIFIED; hands-on check before any ingest.
 3. OCM self-served /v3/openapi returns 403 without a key — first ingest call must carry the BYOK key.
 

@@ -6,4 +6,3 @@ coverage/
 .wrangler/
 .astro/
 *.tsbuildinfo
-LEDGER.md

@@ -1,5 +1,5 @@
 # S0-R1 frameworks — raw data (observed 2026-09-14)
-Inputs thoughts/shared/*, PLAN.md §2/S0, IMPLICIT_SPEC.md IS-10 NOT FOUND in voltbase repo (searched 2026-09-14, UNVERIFIED); brief baselines taken as given.
+Inputs: plan bundle (PLAN.md §2/S0, IMPLICIT_SPEC.md IS-10 — not found in-repo at research time 2026-09-14, UNVERIFIED); brief baselines taken as given.
 ## 1. Rubric — cell = score 0–3, weights W1..W10 = 5,5,4,4,3,4,3,3,2,5; max = 3×38 = 114
 | fw | W1 Workers-first | W2 moving-parts | W3 SSR/static | W4 offline-test | W5 bindings | W6 bundle | W7 health | W8 docs | W9 helpers | W10 spike | total |
 |---|---|---|---|---|---|---|---|---|---|---|---|

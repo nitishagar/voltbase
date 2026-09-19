@@ -64,7 +64,7 @@
   index in v0.1 (no live fetch, no bindings); live ADR-002 fetch lands later
   without changing these caps.
 
-## E2E decision (closes LEDGER #3)
+## E2E decision (S7)
 
 - Chosen: lightweight e2e — node + vitest against `createApp` directly via
   `app.request` (no network) plus the MCP `Client` over `InMemoryTransport`

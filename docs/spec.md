@@ -1,7 +1,7 @@
 # voltbase — spec excerpts (S1 copy)
 
 Source of truth: `IMPLICIT_SPEC.md` + `PLAN.md` §4 S1 in the plan bundle
-(`thoughts/shared/plans/2026-09-14-voltbase/`). This file pins the S1 slice;
+(maintained outside the repo). This file pins the S1 slice;
 later stages extend it, never silently widen it.
 
 ## IS-01 — Apache-2.0 canonical, open-core boundary explicit
@@ -26,7 +26,7 @@ KV/D1/DO/R2 — asserted by the no-persistence gate test).
 
 ## IS-09 — Reproducible swarm (process invariants)
 
-`LEDGER.md` single-writer handoff; stage commits named `S<N>:`, zero
+Single-writer orchestrator handoff log; stage commits named `S<N>:`, zero
 attribution trailers; exact-pinned deps; builder ≠ verifier; sequential
 subagents only (ratelimit); 3 verification rounds max then BLOCKED.
 `git remote -v` stays empty until the S13-equivalent push.
@@ -44,6 +44,6 @@ TS-first; private-then-public (Pages publishes only on the public flip).
 
 Scaffold, tooling, gates: root configs + strict TS + eslint + vitest (node +
 workers pools) + `check-banned` + fixtures + `smoke` + CI (no deploy job) +
-spec excerpts + README/LEDGER link; Worker `/` + `/healthz {"ok":true,
+spec excerpts + README link; Worker `/` + `/healthz {"ok":true,
 "stage":1}` + `src/lib/stage.ts`; package shells; site shell emitting
 `site/dist/index.html`. Six minimum gate tests, all green via `npm run verify`.
