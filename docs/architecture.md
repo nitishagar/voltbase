@@ -72,4 +72,4 @@
 - Reason: free-tier CI (no browser deps to install), seeded S2 fixtures
   suffice for the journey (search → detail → status → reliability → MCP →
   docs), and the Worker surfaces are plain request/response (a browser adds
-  no coverage). Recorded here so the ledger row can close at S7.
+  no coverage). Recorded here so the S7 gate can close on it.
