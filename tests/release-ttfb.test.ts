@@ -16,6 +16,13 @@ describe('release dry-run restores the tree', () => {
     expect(readFileSync('packages/core/package.json', 'utf8')).toContain('./src/index.ts');
     expect(readFileSync('packages/core/package.json', 'utf8')).not.toContain('./dist/index.js');
   });
+
+  it('never plans a mutation for the site workspace (docs artifact, not an npm package)', () => {
+    const res = spawnSync('node', ['scripts/publish-workspaces.mjs'], { encoding: 'utf8' });
+    expect(res.status).toBe(0);
+    expect(`${res.stdout ?? ''}`).not.toContain('site/package.json');
+    expect(readFileSync('site/package.json', 'utf8')).toContain('"private": true');
+  });
 });
 
 describe('TTFB thresholds parse', () => {

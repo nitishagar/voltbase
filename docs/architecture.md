@@ -49,12 +49,14 @@
 
 - Worker: 100k req/d, 10 ms CPU, 50 subrequests + 6 concurrent outbound per
   invocation, 5 crons/account, 64 MiB uncompressed platform cap.
-- Self budgets: 1.5 MiB gzip bundle (cold-start choice; `check-bundle.sh`
-  FAILS past the cap) and 300 ms local TTFB on `/` + `/api/v1/sites`
+- Self budgets: 1.5 MiB gzip (cold-start choice; `check-bundle.sh` FAILS
+  past the cap — it gates the Worker source until a dist bundle exists) and
+  300 ms local TTFB on `/` + `/api/v1/sites`
   (`check-ttfb.mjs`, local-only via `app.request`, no network).
-- Persistence: KV 1k writes/d, D1 100k rows/d — counters stop at 80% (800 /
-  80k) with typed `UPSTREAM_FAILED` + cut-to-artifact (last-good prebuilt cut
-  + stale label). Guard failure never widens serving and never buys a tier.
+- Persistence: KV 1k writes/d, D1 100k rows/d — in-memory per-cron-run
+  counters stop at 80% (800 / 80k) with typed `UPSTREAM_FAILED` +
+  cut-to-artifact (last-good prebuilt cut + stale label). Guard failure
+  never widens serving and never buys a tier.
 
 ## Cron
 

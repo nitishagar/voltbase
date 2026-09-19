@@ -135,7 +135,7 @@ const RELIABILITY_DESC =
   'Served on both transports from the fixture index + prebuilt cut; exhausted budget answers typed UPSTREAM_FAILED with the cut.';
 
 export const buildMcpServer = (deps: McpDeps): McpServer => {
-  const server = new McpServer({ name: 'voltbase', version: '0.0.0' });
+  const server = new McpServer({ name: 'voltbase', version: '0.1.0' });
   // Runtime note: the installed SDK validates these zod 4.6.5 schemas via
   // duck-typing (`normalizeObjectSchema`); the `as unknown as AnySchema`
   // bridge documents the 4.6.5-direct vs SDK-bundled zod type-identity skew

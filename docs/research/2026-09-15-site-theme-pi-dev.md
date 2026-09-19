@@ -147,3 +147,6 @@ The voltbase site is a fully static 7-page docs artifact: one hand-written style
 - Font-weight count and post-port styles.css size are unbounded by any gate (audit items 18): the plan must state the intended font payload and keep the 1.5 MiB budget assertion green.
 - Open to plan: (a) fixed dark theme vs CSS-only prefers-color-scheme dual theme; (b) self-host Commit Mono/Departure Mono (with OFL licence files + build.mjs copy step) vs pure system stacks; (c) exact serif substitute choice; (d) how far to carry the terminal aesthetic (labels, badges, callouts) within the existing component vocabulary; (e) whether to also fix the pre-existing `<base href>` astro-mirror divergence (audit item 9).
 - Unconfirmed: web-licence-vs-desktop split for Plantin (unverifiable without a Monotype account) — irrelevant to the plan since Plantin files are prohibited outright.
+
+## Follow-up 2026-09-19 (S15 hygiene)
+The S15 batch corrected the reliability-tool copy (rollups served since S6; stub removed) and moved the stage marker to 8 — the content pins quoted in this doc as `'\"stage\":5'` and the S4-era stub tokens are historical as of site-s5.test.ts (pins now `'\"stage\":8'` + NOT_FOUND/INVALID_ARGUMENTS).

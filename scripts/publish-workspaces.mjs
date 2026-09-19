@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(here, '..');
 
-/** Workspace manifests covered by the release (root + packages + site). */
+/** Manifests the exact-pins gate scans (root + packages + site). */
 export const MANIFESTS = [
   'package.json',
   'packages/core/package.json',
@@ -36,6 +36,12 @@ export const MANIFESTS = [
   'packages/cli/package.json',
   'site/package.json',
 ];
+
+/**
+ * Manifests the release MUTATES (clear private, repoint exports). site/ is a
+ * docs artifact, not an npm package — its private flag is never cleared.
+ */
+export const PUBLISH_MANIFESTS = MANIFESTS.filter((rel) => !rel.startsWith('site/'));
 
 /** True for an exact `1.2.3` pin (optional build/prerelease suffix allowed). */
 export const isExactPin = (version) => {
@@ -96,7 +102,7 @@ const applyEdits = (manifest) => {
 };
 
 const readManifests = () =>
-  MANIFESTS.map((rel) => ({ rel, raw: readFileSync(join(rootDir, rel), 'utf8') }));
+  PUBLISH_MANIFESTS.map((rel) => ({ rel, raw: readFileSync(join(rootDir, rel), 'utf8') }));
 
 const anyPrivate = (entries) =>
   entries.some(({ raw }) => {
@@ -112,7 +118,7 @@ const isMain = process.argv[1] !== undefined && process.argv[1].endsWith('publis
 export const runRelease = ({ publish = false } = {}) => {
   const entries = readManifests();
 
-  // Exact-pins gate first: fail before any mutation.
+  // Exact-pins gate first: fail before any mutation (scans ALL manifests incl. site).
   const violations = collectPinViolations(MANIFESTS);
   if (violations.length > 0) {
     process.stderr.write(`publish-workspaces: FAIL — non-exact pins:\n${violations.join('\n')}\n`);

@@ -1,5 +1,5 @@
 # voltbase — environment variable NAMES only (BYOK; S0, 2026-09-14)
-This file contains ZERO secret values — names only. Keys are read per request by NAME from env/header, never logged, persisted, baked into git, or shipped in the Pages artifact or npm `dist/` (IS-05). `.dev.vars` is gitignored; remote secrets go in via `wrangler secret` at S13 only. Missing key ⇒ typed `UNCONFIGURED` skip, not failure.
+This file contains ZERO secret values — names only. Keys are read per request by NAME from env/header, never logged, persisted, baked into git, or shipped in the Pages artifact or npm `dist/` (IS-05). `.dev.vars` is gitignored; remote secrets go in via `wrangler secret` at S13 only. A missing key ⇒ the tool payload flags `byokConfigured: false` (a graceful skip), never a failure.
 
 | NAME | Purpose | Consumer |
 |---|---|---|

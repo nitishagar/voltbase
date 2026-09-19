@@ -7,7 +7,7 @@ Decisions: ADR-001 (stack), ADR-002 (feeds/cadence), ADR-003 (licence partitioni
 - `packages/providers` — feed clients + dynamic poller paths (S6).
 - `packages/mcp` — `buildMcpServer` factory (the one composition root) + `worker/` — API routes + `POST /mcp` gateway, Worker name `voltbase-api`.
 - `packages/cli` — `bin: {voltbase: ./bin/voltbase.js}`; stdio MCP via `voltbase mcp`.
-- `site/` — Astro static + pagefind, base `/voltbase`, artifact `site/dist` (local preview until public flip).
+- `site/` — hand-written static emitter (`build.mjs`, the canonical emit) + pagefind, base `/voltbase`, artifact `site/dist`; `site/src/pages/*.astro` are hand-synced mirrors (astro build stays the future path).
 
 ## Scripts (S1 scaffolds; names are the contract)
 `dev, build, typecheck, lint, format, format:check, test, smoke, verify, check:banned` (+ `db/cache:reset` only when a binding exists). `verify` prints `VERIFY OK stage=<N>`; validate chain mirrors lumen: typecheck && lint && build && test && smoke.

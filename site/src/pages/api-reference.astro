@@ -12,6 +12,8 @@ const title = 'API reference — voltbase';
     <title>{title}</title>
     <meta name="description" content="Hand-written voltbase REST reference: health, sites search, site detail, status, errors and MCP transport notes." />
     <link rel="stylesheet" href="/voltbase/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />
+    <base href="/voltbase/" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -34,7 +36,7 @@ const title = 'API reference — voltbase';
       <h2>GET /healthz</h2>
       <p>Liveness plus the build stage marker.</p>
       <pre><code>GET /healthz
-{"ok":true,"stage":5}</code></pre>
+{"ok":true,"stage":8}</code></pre>
 
       <h2>GET /api/v1/sites</h2>
       <p>Search servable sites. Filters: <code>bbox</code> (<code>minLon,minLat,maxLon,maxLat</code>), <code>connector</code> (case-insensitive substring, max 64 chars), <code>minPower</code> (kW floor), <code>openOnly</code> (<code>true</code> keeps AVAILABLE rows only). Pagination: <code>limit</code> (1–100, default 20), <code>offset</code> (0–100000, default 0).</p>
@@ -67,7 +69,7 @@ const title = 'API reference — voltbase';
           <tr><td>UNAUTHORIZED</td><td>401</td><td>Missing or invalid API key when the free-key gate is set</td></tr>
           <tr><td>RATE_LIMITED</td><td>429</td><td>More than 60 requests per minute per IP (retry-after header set)</td></tr>
           <tr><td>NOT_FOUND</td><td>404</td><td>Unknown route, or unknown/closed site id (never a closed signal)</td></tr>
-          <tr><td>UPSTREAM_BLOCKED</td><td>403</td><td>Non-allowlisted or private-origin fetch refused before any fetch</td></tr>
+          <tr><td>UPSTREAM_BLOCKED</td><td>403</td><td>Non-allowlisted or private-origin request refused before any outbound call</td></tr>
           <tr><td>PAYLOAD_TOO_LARGE</td><td>413</td><td>Request body over the cap, rejected before parsing</td></tr>
         </tbody>
       </table>

@@ -15,7 +15,7 @@ public flip) from public artefacts (lib `dist/`, Pages `site/dist`).
 Third-party keys are referenced by env/header NAME per request (see
 `docs/env.md`: `OCM_API_KEY`, deploy names at S13 only); never logged,
 persisted, baked into git, or shipped in the Pages artifact or npm `dist/`.
-Missing key ⇒ typed `UNCONFIGURED` skip, not failure.
+Missing key ⇒ the payload flags `byokConfigured: false` (a graceful skip), never a failure.
 
 ## IS-06 — Stateless edge, explicit persistence
 

@@ -10,6 +10,8 @@ const title = 'Quickstart — voltbase';
     <title>{title}</title>
     <meta name="description" content="Install voltbase, run the Worker locally, and make your first search over open EV charging data." />
     <link rel="stylesheet" href="/voltbase/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />
+    <base href="/voltbase/" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -38,10 +40,10 @@ const title = 'Quickstart — voltbase';
       <pre><code>git clone &lt;your-voltbase-mirror&gt; voltbase
 cd voltbase
 npm ci
-npm run verify   # typecheck, lint, build, test, smoke -> VERIFY OK stage=5</code></pre>
+npm run verify   # typecheck, lint, build, test, smoke -> VERIFY OK stage=8</code></pre>
       <h2>3. Run the Worker locally</h2>
       <pre><code>npm run dev
-# GET /healthz answers {"ok":true,"stage":5}</code></pre>
+# GET /healthz answers {"ok":true,"stage":8}</code></pre>
       <h2>4. First search (open data only)</h2>
       <pre><code>curl 'http://localhost:8787/api/v1/sites?connector=CCS2&amp;minPower=50&amp;limit=5&amp;offset=0'</code></pre>
       <p>The response carries <code>data</code>, page info (<code>limit</code>, <code>offset</code>, <code>total</code>) and per-partition <code>attribution</code>. Try a known open row next:</p>

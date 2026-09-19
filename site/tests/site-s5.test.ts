@@ -175,7 +175,7 @@ describe('site S5 gates', () => {
       'tools/list',
       'POST /mcp',
       'GET /mcp',
-      '"stage":5',
+      '"stage":8',
       'limit',
       'offset',
     ]) {
@@ -191,8 +191,8 @@ describe('site S5 gates', () => {
       'voltbase_status',
       'voltbase_reliability',
       'voltbase mcp',
-      'UNAVAILABLE_S6',
-      'LOCAL_ONLY_CAPABILITY',
+      'NOT_FOUND',
+      'INVALID_ARGUMENTS',
     ]) {
       expect(page, `mcp-onboarding missing ${token}`).toContain(token);
     }
@@ -252,5 +252,47 @@ describe('site S5 gates', () => {
     }
     const css = readFileSync(join(dist, 'styles.css'), 'utf8');
     expect(css).toContain(':focus-visible');
+  });
+
+  it('every page head links the brand favicon (S15 completeness emit)', () => {
+    for (const slug of SLUGS) {
+      expect(readHtml(slug), `${slug}: favicon link`).toContain(
+        '<link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />',
+      );
+    }
+  });
+});
+
+describe('site completeness emit (S15)', () => {
+  it('emits a script-free brand favicon.svg at the dist root', () => {
+    const svg = readFileSync(join(dist, 'favicon.svg'), 'utf8');
+    expect(svg).toMatch(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    expect(svg).not.toContain('<script');
+  });
+
+  it('emits 404.html outside the pagefind index, with a resolvable home link', () => {
+    const html = readFileSync(join(dist, '404.html'), 'utf8');
+    expect(html).toContain('404 — page not found');
+    expect(html).not.toContain('data-pagefind-body');
+    expect(html).not.toMatch(/<script/i);
+    expect(html).toContain('<a href="/voltbase/">Back to the docs home page</a>');
+    expect(existsSync(join(dist, 'index.html')), '404 home link target').toBe(true);
+  });
+
+  it('emits sitemap.xml over exactly the 7 canonical pages', () => {
+    const xml = readFileSync(join(dist, 'sitemap.xml'), 'utf8');
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1] ?? '');
+    expect(locs).toHaveLength(7);
+    for (const loc of locs) {
+      expect(loc.startsWith('https://nitishagar.github.io/voltbase/'), `loc ${loc}`).toBe(true);
+    }
+    expect(locs).toContain('https://nitishagar.github.io/voltbase/');
+  });
+
+  it('pagefind fallback index stays exactly 7 entries (real-binary path emits no fallback file)', () => {
+    const fallback = join(dist, 'pagefind', 'pagefind-index.json');
+    if (!existsSync(fallback)) return; // real pagefind binary ran; no fallback file
+    const parsed = JSON.parse(readFileSync(fallback, 'utf8')) as { entries: unknown[] };
+    expect(parsed.entries).toHaveLength(7);
   });
 });

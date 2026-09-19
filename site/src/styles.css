@@ -76,7 +76,7 @@
 * { box-sizing: border-box; }
 
 html {
-  font-size: 18px;
+  font-size: 112.5%; /* 18px at the 16px UA default; scales with user preference */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

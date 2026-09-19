@@ -60,7 +60,7 @@ const navFor = (slug) =>
   ).join('') +
   '</ul></nav></div></header>';
 
-const doc = (slug, title, desc, body) =>
+const doc = (slug, title, desc, body, { pagefind = true } = {}) =>
   `<!doctype html>
 <html lang="en">
 <head>
@@ -69,12 +69,13 @@ const doc = (slug, title, desc, body) =>
 <title>${title}</title>
 <meta name="description" content="${desc}" />
 <link rel="stylesheet" href="/voltbase/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />
 <base href="/voltbase/" />
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 ${navFor(slug)}
-<div class="wrap"><main id="main" data-pagefind-body>
+<div class="wrap"><main id="main"${pagefind ? ' data-pagefind-body' : ''}>
 ${body}
 </main></div>
 ${FOOT}
@@ -112,10 +113,10 @@ const PAGES = {
 <pre><code>git clone &lt;your-voltbase-mirror&gt; voltbase
 cd voltbase
 npm ci
-npm run verify   # typecheck, lint, build, test, smoke -&gt; VERIFY OK stage=5</code></pre>
+npm run verify   # typecheck, lint, build, test, smoke -&gt; VERIFY OK stage=8</code></pre>
 <h2>3. Run the Worker locally</h2>
 <pre><code>npm run dev
-# GET /healthz answers {"ok":true,"stage":5}</code></pre>
+# GET /healthz answers {"ok":true,"stage":8}</code></pre>
 <h2>4. First search (open data only)</h2>
 <pre><code>curl 'http://localhost:8787/api/v1/sites?connector=CCS2&amp;minPower=50&amp;limit=5&amp;offset=0'</code></pre>
 <p>The response carries <code>data</code>, page info (<code>limit</code>, <code>offset</code>, <code>total</code>) and per-partition <code>attribution</code>. Try a known open row next:</p>
@@ -136,7 +137,7 @@ node packages/cli/bin/voltbase.js search --connector CCS2 --limit 5</code></pre>
 <h2>GET /healthz</h2>
 <p>Liveness plus the build stage marker.</p>
 <pre><code>GET /healthz
-{"ok":true,"stage":5}</code></pre>
+{"ok":true,"stage":8}</code></pre>
 <h2>GET /api/v1/sites</h2>
 <p>Search servable sites. Filters: <code>bbox</code> (<code>minLon,minLat,maxLon,maxLat</code>), <code>connector</code> (case-insensitive substring, max 64 chars), <code>minPower</code> (kW floor), <code>openOnly</code> (<code>true</code> keeps AVAILABLE rows only). Pagination: <code>limit</code> (1–100, default 20), <code>offset</code> (0–100000, default 0).</p>
 <pre><code>GET /api/v1/sites?bbox=4.0,52.0,5.0,53.0&amp;connector=CCS2&amp;minPower=50&amp;openOnly=true&amp;limit=20&amp;offset=0
@@ -179,7 +180,7 @@ GET /mcp    # 405 Method not allowed: use POST /mcp for Streamable HTTP (statele
 <p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The four tool names are identical on both.</p>
 <h2>Option A — stdio (local)</h2>
 <pre><code>voltbase mcp</code></pre>
-<p>Stdio mode has full local compute, including the reliability stub answer below. Point any MCP-compatible client at the command above.</p>
+<p>Stdio mode has full local compute, including the reliability rollups below. Point any MCP-compatible client at the command above.</p>
 <h2>Option B — HTTP (remote)</h2>
 <pre><code>POST /mcp   # JSON-RPC: tools/list, then tools/call
 GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
@@ -188,7 +189,7 @@ GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
 <tr><td><code>voltbase_search_sites</code></td><td><code>bbox</code>, <code>connector</code>, <code>minPower</code>, <code>openOnly</code>, <code>limit</code>, <code>offset</code></td><td>Paged servable rows plus per-partition attribution credits</td></tr>
 <tr><td><code>voltbase_site_detail</code></td><td><code>id</code> (for example <code>OCM:900000</code>)</td><td>One servable row, or typed <code>NOT_FOUND</code></td></tr>
 <tr><td><code>voltbase_status</code></td><td><code>id</code>, optional <code>after</code> (ISO instant, newer-only polling)</td><td>Status plus the 60-minute stale label; <code>newer:false</code> when nothing is newer than <code>after</code></td></tr>
-<tr><td><code>voltbase_reliability</code></td><td><code>id</code></td><td>Stub in v0.1: typed <code>UNAVAILABLE_S6</code> locally, typed <code>LOCAL_ONLY_CAPABILITY</code> remotely (run <code>voltbase mcp</code>)</td></tr>
+<tr><td><code>voltbase_reliability</code></td><td><code>id</code></td><td>Uptime rollups for the site from the prebuilt reliability cut, with attribution; the stale label applies beyond the refresh SLO</td></tr>
 </tbody></table>
 <h2>Rules clients should know</h2>
 <ul><li>Results are JSON-in-text; every served payload carries attribution and provenance.</li><li>Unknown arguments answer typed <code>INVALID_ARGUMENTS</code> (strict schemas, no silent drops).</li><li>Closed or unknown ids answer typed <code>NOT_FOUND</code> — the tools never confirm that a closed row exists.</li><li>BYOK is per request and by name (<code>OCM_API_KEY</code>); key values are never logged, stored or echoed. Missing key means a typed skip, not a failure.</li></ul>`,
@@ -336,6 +337,32 @@ const buildIndex = (pagefindDir) => {
   return 'fallback';
 };
 
+/** Brand favicon: chevron glyph on the dark canvas token (no font dependency). */
+const FAVICON_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">' +
+  '<rect width="32" height="32" rx="6" fill="#161d27"/>' +
+  '<path d="M11 9l8 7-8 7" stroke="#6a9fcc" stroke-width="3.5" fill="none" ' +
+  'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/** Sitemap over the canonical 7 pages (absolute production URLs). */
+const SITEMAP_XML = () => {
+  const base = 'https://nitishagar.github.io/voltbase/';
+  const urls = Object.keys(PAGES)
+    .map((slug) => `  <url><loc>${base}${slug === 'index' ? '' : `${slug}/`}</loc></url>`)
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+};
+
+const NOT_FOUND_PAGE = doc(
+  '404',
+  '404 — voltbase',
+  'The page you asked for is not part of the voltbase docs.',
+  `<h1>404 — page not found</h1>
+<p class="lede">The page you asked for is not part of these docs.</p>
+<p><a href="/voltbase/">Back to the docs home page</a>.</p>`,
+  { pagefind: false },
+);
+
 // --- emit -----------------------------------------------------------------
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
@@ -361,6 +388,9 @@ for (const entry of readdirSync(join(here, 'src', 'fonts'))) {
   copyFileSync(join(here, 'src', 'fonts', entry), join(fontsOut, entry));
 }
 writeFileSync(join(outDir, 'robots.txt'), ROBOTS);
+writeFileSync(join(outDir, 'favicon.svg'), `${FAVICON_SVG}\n`);
+writeFileSync(join(outDir, '404.html'), `${NOT_FOUND_PAGE}\n`);
+writeFileSync(join(outDir, 'sitemap.xml'), SITEMAP_XML());
 
 const indexKind = buildIndex(join(outDir, 'pagefind'));
 

@@ -4,7 +4,7 @@
 
 1. Confirm the repo is public and `git remote -v` points at the intended
    mirror (stays empty until S13 per IS-09).
-2. `npm ci && npm run verify` must print `VERIFY OK stage=7` with 130+ tests
+2. `npm ci && npm run verify` must print `VERIFY OK stage=8` with 140+ tests
    green, bundle OK, TTFB OK, `check-banned: OK`.
 3. `wrangler deploy --config packages/mcp/worker/wrangler.jsonc` (Worker
    `voltbase-api`; this config — not the root dev one — carries the single
@@ -41,7 +41,7 @@
 1. Symptom: `GET /api/v1/reliability/:id` answers 503
    `{error:{code:UPSTREAM_FAILED}}` plus a `cut` payload, or the cron stats
    report `stopped: UPSTREAM_FAILED`.
-2. Check the guard counters (KV 800 writes/d, D1 80k rows/d lines): at 80% the
+2. Check the poller guard counters (in-memory per cron run, stopping at 80% of the KV 1k writes/d and D1 100k rows/d daily budgets): at 80% the
    stop is working as designed (ADR-002 §W1) — do not raise caps, do not buy
    a tier (IS-10: cut scope, never upgrade).
 3. Serve the cut, keep the stale label, and wait for the next UTC day window;
@@ -54,5 +54,4 @@
 
 ## On-call
 
-- On-call: none in v0.1 (on-call资源的 none — no rotation, no paging; the
-  stateless edge + cut-to-artifact fallback is the coverage until S13).
+- On-call: none in v0.1 (no rotation — solo maintainer).

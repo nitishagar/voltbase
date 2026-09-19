@@ -10,21 +10,21 @@ Requires Node >= 22.
 
 ```bash
 npm install
-npm run verify   # typecheck && lint && build && test && smoke -> VERIFY OK stage=1
-npm test         # vitest run (node pool + workers pool)
+npm run verify   # typecheck && lint && build && test && smoke -> VERIFY OK stage=8
+npm test         # vitest run (node pool + workers pool + site artifact gates)
 npm run dev      # wrangler dev (local Worker)
 ```
 
 ## Packages
 
-| Package | Purpose (S1 shell; logic lands S2–S6) |
+| Package | Purpose |
 | --- | --- |
-| [`@voltbase/core`](./packages/core) | domain types (ChargePoint, Connector, Status, Attribution, Provenance) — S2 |
-| [`@voltbase/normalise`](./packages/normalise) | mappers OCM/OSM/OCPI/DATEX II → core + licence filter — S2 |
-| [`@voltbase/providers`](./packages/providers) | feed clients + dynamic poller paths — S6 |
-| [`@voltbase/mcp`](./packages/mcp) | `buildMcpServer` factory + `worker/` API routes + `POST /mcp` gateway — S3/S4 |
-| [`@voltbase/cli`](./packages/cli) | `voltbase` CLI, stdio MCP launcher — S4 |
-| `@voltbase/site` | docs site ([local preview](./site)) — S5 |
+| [`@voltbase/core`](./packages/core) | domain types (ChargePoint, Connector, Status, Attribution, Provenance) + the ADR-003 partition key |
+| [`@voltbase/normalise`](./packages/normalise) | mappers OCM/OSM/OCPI/DATEX II → core + licence filter (unknown ⇒ closed) |
+| [`@voltbase/providers`](./packages/providers) | feed clients + the hourly transition-only reliability poller |
+| [`@voltbase/mcp`](./packages/mcp) | `buildMcpServer` factory + `worker/` REST routes + `POST /mcp` gateway (deployed live) |
+| [`@voltbase/cli`](./packages/cli) | `voltbase` CLI, stdio MCP launcher |
+| `@voltbase/site` | docs site ([live on GitHub Pages](https://nitishagar.github.io/voltbase/)) |
 
 ## Stewardship
 
