@@ -5,9 +5,9 @@ venture-client track: paid first pilot, contact-to-pilot in ~3 weeks).
 
 ## Links
 - Repo: https://github.com/nitishagar/voltbase (Apache-2.0, public)
-- Depot dashboard: https://nitishagar.github.io/voltbase/depot/ (live after push deploys Pages)
-- Depot API: https://voltbase-api.nitishagar.workers.dev/api/v1/depot/sessions (live after push deploys Worker)
-- MCP: `POST /mcp` tools `voltbase_depot_sessions`, `voltbase_depot_faults` (same URLs as above)
+- Depot dashboard: https://nitishagar.github.io/voltbase/depot/ (live)
+- Depot API: `GET /api/v1/depot/sessions`, `GET /api/v1/depot/faults` on the voltbase Worker (live on next `wrangler deploy` — owner step, CI green; verified locally via app.request + CLI + eval)
+- MCP: `POST /mcp` tools `voltbase_depot_sessions`, `voltbase_depot_faults` (same Worker as above)
 
 ## What it is (one paragraph for the form)
 ChargeLens normalises heterogeneous EV-charger dialects (OCPP 1.6J and 2.0.1)
