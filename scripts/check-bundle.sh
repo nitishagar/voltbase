@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CAP_BYTES=1572864 # 1.5 MiB
-BYTES="$(gzip -c packages/mcp/worker/*.ts packages/core/src/index.ts packages/normalise/src/index.ts src/lib/stage.ts | wc -c)"
+BYTES="$(gzip -c packages/mcp/worker/*.ts packages/core/src/index.ts packages/normalise/src/index.ts packages/sessions/src/*.ts src/lib/stage.ts | wc -c)"
 BYTES="$(echo "${BYTES}" | tr -d ' ')"
 
 if [ "${BYTES}" -gt "${CAP_BYTES}" ]; then

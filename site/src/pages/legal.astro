@@ -24,22 +24,23 @@ const title = 'Legal (DRAFT) — voltbase';
         <li><a href="/voltbase/api-reference/">API reference</a></li>
         <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
         <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/depot/">Depot</a></li>
         <li><a href="/voltbase/attributions/">Attributions</a></li>
         <li><a href="/voltbase/legal/" aria-current="page">Legal</a></li>
       </ul></nav>
     </div></header>
     <div class="wrap"><main id="main" data-pagefind-body>
       <h1>Legal — DRAFT</h1>
-      <p class="notice"><strong>DRAFT:</strong> everything on this page is a draft pending review. It is engineering due-diligence, not legal advice. Nothing here widens the v0.1 scope (read-only discovery, no sessions, no payments).</p>
+      <p class="notice"><strong>DRAFT:</strong> everything on this page is a draft pending review. It is engineering due-diligence, not legal advice. Nothing here widens the v0.1 scope (read-only discovery, simulated demo sessions, no payments).</p>
 
       <h2>Repository licence</h2>
       <p>Repository and package code is Apache-2.0. Data served through the API and MCP keeps its per-feed licence per row (see <a href="/voltbase/attributions/">Attributions</a>); the served index is a partitioned ODbL Collective Database, not a Derivative Database.</p>
 
       <h2>India data-only scope — DRAFT</h2>
-      <p>India coverage in v0.1 is <strong>data-only</strong>: static OSM-extract rows (ODbL) for discovery, with EU-first live data. No live Indian operator feeds, no sessions, no payments.</p>
+      <p>India coverage in v0.1 is <strong>data-only</strong>: static OSM-extract rows (ODbL) for discovery, with EU-first live data. No live Indian operator feeds and no payments; depot sessions are simulated in-repo data, not operator feeds.</p>
 
       <h2>DPDP Act 2023 note — DRAFT</h2>
-      <p>India's Digital Personal Data Protection Act 2023 governs personal data; voltbase v0.1 serves charging-site location records (open data), not personal data, and stores no user data at the edge (stateless, no sessions, no KV/D1). Any future handling of personal data — including consent, notice and retention workflows for India users — must be designed, reviewed and recorded before it ships. This note is a <strong>DRAFT</strong> marker, not a compliance finding.</p>
+      <p>India's Digital Personal Data Protection Act 2023 governs personal data; voltbase v0.1 serves charging-site location records (open data), not personal data, and stores no user data at the edge (stateless, no KV/D1). Driver identifiers in depot traces are dropped at ingest; only opaque charger references are served. Any future handling of personal data — including consent, notice and retention workflows for India users — must be designed, reviewed and recorded before it ships. This note is a <strong>DRAFT</strong> marker, not a compliance finding.</p>
 
       <h2>Per-feed licence drafts</h2>
       <ul>

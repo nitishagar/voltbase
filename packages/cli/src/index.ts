@@ -7,7 +7,14 @@
  */
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
+  DEPOT_BUILD,
+  DEPOT_REJECTED_COUNT,
+  DEPOT_RETRIEVED_AT,
+  SERVABLE_SESSIONS,
   buildMcpServer,
+  depotFaults,
+  faultCountsByCharger,
+  filterSessions,
   filterSites,
   findServableById,
   resultAttribution,
@@ -23,10 +30,12 @@ Usage:
   voltbase <command> [flags]
 
 Commands:
-  mcp                  MCP server over stdio (same 4 tools as POST /mcp)
+  mcp                  MCP server over stdio (same 6 tools as POST /mcp)
   search               Search servable sites (JSON to stdout)
   detail <id>          Site detail for one id (JSON to stdout)
   status <id>          Live status for one id (JSON to stdout)
+  depot sessions       Depot charging sessions (JSON to stdout)
+  depot faults         Depot fault sessions + per-charger counts (JSON to stdout)
 
 Global flags:
   --help, -h           Usage for voltbase (exit 0)
@@ -39,8 +48,9 @@ Usage:
 
 Starts the voltbase MCP server on stdio (same buildMcpServer factory as
 POST /mcp: voltbase_search_sites, voltbase_site_detail, voltbase_status,
-voltbase_reliability rollups). Stdout carries JSON-RPC frames only; the ready
-note goes to stderr. Piped EOF / SIGINT stops the server.
+voltbase_reliability, voltbase_depot_sessions, voltbase_depot_faults).
+Stdout carries JSON-RPC frames only; the ready note goes to stderr.
+Piped EOF / SIGINT stops the server.
 
 Flags:
   --help, -h           Usage for voltbase mcp (exit 0)
@@ -184,6 +194,69 @@ const runStatus = (argv: readonly string[], io: CliIo): number => {
   return 0;
 };
 
+const runDepot = (argv: readonly string[], io: CliIo): number => {
+  const [view, ...rest] = argv;
+  if (view === undefined || view === '--help' || view === '-h' || (view !== 'sessions' && view !== 'faults')) {
+    io.out('Usage: voltbase depot <sessions|faults> [--chargerRef REF] [--dialect ocpp1.6|ocpp2.0.1, sessions only] [--openOnly] [--limit N] [--offset N, sessions only]\n');
+    return view === '--help' || view === '-h' ? 0 : 2;
+  }
+  if (!DEPOT_BUILD.ok) {
+    io.err(`${JSON.stringify({ error: { code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' } })}\n`);
+    return 1;
+  }
+  const chargerRef = parseFlag(rest, 'chargerRef');
+  if (chargerRef !== undefined && (chargerRef.trim() === '' || chargerRef.length > 64)) {
+    io.err('error: chargerRef must be a non-empty string of at most 64 chars\n');
+    return 2;
+  }
+  const dialectRaw = parseFlag(rest, 'dialect');
+  if (view === 'faults' && dialectRaw !== undefined && dialectRaw !== '') {
+    io.err('error: dialect is sessions-only\n');
+    return 2;
+  }
+  if (dialectRaw !== undefined && dialectRaw !== '' && dialectRaw !== 'ocpp1.6' && dialectRaw !== 'ocpp2.0.1') {
+    io.err('error: dialect must be ocpp1.6 or ocpp2.0.1\n');
+    return 2;
+  }
+  const limitRaw = parseFlag(rest, 'limit');
+  const offsetRaw = parseFlag(rest, 'offset');
+  if (view === 'faults' && offsetRaw !== undefined && offsetRaw !== '') {
+    io.err('error: offset is not supported on faults (limit only)\n');
+    return 2;
+  }
+  const limit = limitRaw === undefined || limitRaw === '' ? 20 : Number(limitRaw);
+  const offset = offsetRaw === undefined || offsetRaw === '' ? 0 : Number(offsetRaw);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    io.err('error: limit must be an integer between 1 and 100\n');
+    return 2;
+  }
+  if (!Number.isInteger(offset) || offset < 0 || offset > 100_000) {
+    io.err('error: offset must be an integer between 0 and 100000\n');
+    return 2;
+  }
+  const info = staleInfo(DEPOT_RETRIEVED_AT, Date.now());
+  const stale = { stale: info.stale, ...(info.reason === undefined ? {} : { staleReason: info.reason }) };
+  const meta = { meta: { rejectedCount: DEPOT_REJECTED_COUNT } };
+  if (view === 'faults') {
+    const filtered = depotFaults(SERVABLE_SESSIONS, chargerRef === undefined || chargerRef === '' ? undefined : chargerRef);
+    const data = filtered.slice(0, limit);
+    io.out(
+      `${JSON.stringify({ data, counts: faultCountsByCharger(filtered), page: { limit, offset: 0, total: filtered.length }, attribution: resultAttribution(data), ...meta, ...stale })}\n`,
+    );
+    return 0;
+  }
+  const filtered = filterSessions(SERVABLE_SESSIONS, {
+    ...(chargerRef === undefined || chargerRef === '' ? {} : { chargerRef }),
+    ...(dialectRaw === undefined || dialectRaw === '' ? {} : { dialect: dialectRaw as 'ocpp1.6' | 'ocpp2.0.1' }),
+    openOnly: hasFlag(rest, 'openOnly'),
+  });
+  const data = filtered.slice(offset, offset + limit);
+  io.out(
+    `${JSON.stringify({ data, page: { limit, offset, total: filtered.length }, attribution: resultAttribution(data), ...meta, ...stale })}\n`,
+  );
+  return 0;
+};
+
 const runMcp = async (argv: readonly string[], io: CliIo): Promise<number> => {
   if (argv.includes('--help') || argv.includes('-h')) {
     io.out(MCP_USAGE);
@@ -218,6 +291,7 @@ export const run = async (argv: readonly string[], io: CliIo = defaultIo()): Pro
   if (command === 'search') return runSearch(rest, io);
   if (command === 'detail' || command === 'site-detail') return runDetail(rest, io);
   if (command === 'status') return runStatus(rest, io);
+  if (command === 'depot') return runDepot(rest, io);
   io.err(`error: unknown command "${command}" — run "voltbase --help" for usage.\n`);
   return 2;
 };

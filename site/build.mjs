@@ -43,6 +43,7 @@ const NAV = [
   ['/voltbase/api-reference/', 'API reference', 'api-reference'],
   ['/voltbase/mcp-onboarding/', 'MCP onboarding', 'mcp-onboarding'],
   ['/voltbase/providers/', 'Providers', 'providers'],
+  ['/voltbase/depot/', 'Depot', 'depot'],
   ['/voltbase/attributions/', 'Attributions', 'attributions'],
   ['/voltbase/legal/', 'Legal', 'legal'],
 ];
@@ -95,10 +96,10 @@ const PAGES = {
 <div class="grid-3">
 <section class="card"><h3>1. Normalise</h3><p>OCM, OSM extracts, OCPI 2.2.1 and DATEX II feeds map into one core row with a per-row source and licence partition key. Unknown licences are treated as closed and never served.</p></section>
 <section class="card"><h3>2. Serve</h3><p>A stateless edge API serves servable rows only, each with source, retrieved-at and attribution. Stale rows carry a stale label, never silent empties.</p></section>
-<section class="card"><h3>3. Ask</h3><p>The same four tools answer over CLI stdio (<code>voltbase mcp</code>) and over HTTP (<code>POST /mcp</code>), with typed errors where a capability is local-only.</p></section>
+<section class="card"><h3>3. Ask</h3><p>The same six tools answer over CLI stdio (<code>voltbase mcp</code>) and over HTTP (<code>POST /mcp</code>), with typed errors where a capability is local-only.</p></section>
 </div>
 <h2>Pricing</h2>
-<p><strong>Free self-serve (v0.1):</strong> everything in these docs — normalisation, discovery API and MCP over open data. <strong>Paid self-serve:</strong> placeholder — no payments, sessions or billing exist in v0.1 (see <a href="/voltbase/legal/">Legal</a>).</p>
+<p><strong>Free self-serve (v0.1):</strong> everything in these docs — normalisation, discovery API and MCP over open data, plus the simulated depot demo. <strong>Paid self-serve:</strong> placeholder — no payments or billing exist in v0.1; depot sessions are simulated demo data (see <a href="/voltbase/legal/">Legal</a>).</p>
 <h2>Open data only</h2>
 <p>Every example on this site uses open-licenced rows: NL NDW (CC0), LU Chargy KML (CC0), FR IRVE (Licence Ouverte / Etalab), OCM open rows (CC BY 4.0) and OSM extracts (ODbL). Provider-copyright and unclear-licence rows are excluded before serving — see <a href="/voltbase/attributions/">Attributions</a>.</p>`,
   },
@@ -131,7 +132,7 @@ node packages/cli/bin/voltbase.js search --connector CCS2 --limit 5</code></pre>
   },
   'api-reference': {
     title: 'API reference — voltbase',
-    desc: 'Hand-written voltbase REST reference: health, sites search, site detail, status, errors and MCP transport notes.',
+    desc: 'Hand-written voltbase REST reference: health, sites search, site detail, status, depot sessions and faults, errors and MCP transport notes.',
     body: `<h1>API reference</h1>
 <p class="lede">Hand-written from the Worker routes. Read-only, stateless, open data only. Every error uses one typed envelope: <code>{"error":{"code":"...","message":"..."}}</code>.</p>
 <h2>GET /healthz</h2>
@@ -158,6 +159,24 @@ node packages/cli/bin/voltbase.js search --connector CCS2 --limit 5</code></pre>
   "retrievedAt": "2026-09-14T06:15:00.000Z", "source": "ocm",
   "stale": true, "staleReason": "retrievedAt 2026-09-14T06:15:00.000Z is older than the 60min refresh SLO (serving last-good static cut)",
   "attribution": {"text": "EnBW (via Open Charge Map)", "url": "https://openchargemap.io"}}}</code></pre>
+<h2>GET /api/v1/depot/sessions</h2>
+<p>Depot charging sessions over the simulated CC0 corpus (4 rows: OCPP 1.6J full and hostile flows plus OCPP 2.0.1 events). Filters: <code>chargerRef</code> (case-insensitive, max 64 chars), <code>dialect</code> (<code>ocpp1.6</code> or <code>ocpp2.0.1</code>), <code>openOnly</code>. Pagination: <code>limit</code> (1–100, default 20), <code>offset</code> (default 0). Rows carry energy in Wh, quality flags, and the 60-minute stale label.</p>
+<pre><code>GET /api/v1/depot/sessions?chargerRef=cp-16b&amp;limit=20&amp;offset=0
+
+{
+  "data": [{ "id": "OCPP:cp-16b:1009", "energyWh": 1500 }],
+  "page": { "limit": 20, "offset": 0, "total": 2 },
+  "attribution": [{ "text": "voltbase simulated CC0 trace" }]
+}</code></pre>
+<h2>GET /api/v1/depot/faults</h2>
+<p>Fault sessions (rows with data-quality flags other than <code>openSession</code>) plus per-charger fault counts, most-faulted first. Same <code>chargerRef</code>/<code>limit</code> filters (<code>offset</code> is rejected: limit only).</p>
+<pre><code>GET /api/v1/depot/faults
+
+{
+  "data": [{ "id": "OCPP:cp-16b:1009" }],
+  "counts": [{ "chargerRef": "cp-16b", "faults": 2 }],
+  "page": { "limit": 20, "offset": 0, "total": 2 }
+}</code></pre>
 <h2>Errors</h2>
 <table><thead><tr><th>Code</th><th>Status</th><th>When</th></tr></thead><tbody>
 <tr><td>INVALID_ARGUMENTS</td><td>400</td><td>Bad bbox, connector, minPower, limit or offset</td></tr>
@@ -169,27 +188,29 @@ node packages/cli/bin/voltbase.js search --connector CCS2 --limit 5</code></pre>
 </tbody></table>
 <pre><code>{"error": {"code": "NOT_FOUND", "message": "unknown site id"}}</code></pre>
 <h2>MCP transport</h2>
-<p>The same four tools are served over Streamable HTTP at <code>POST /mcp</code> (use <code>tools/list</code> then <code>tools/call</code>). Non-POST methods answer the typed JSON-RPC error with status 405 — there is no session to hold. See <a href="/voltbase/mcp-onboarding/">MCP onboarding</a>.</p>
+<p>The same six tools are served over Streamable HTTP at <code>POST /mcp</code> (use <code>tools/list</code> then <code>tools/call</code>). Non-POST methods answer the typed JSON-RPC error with status 405 — there is no session to hold. See <a href="/voltbase/mcp-onboarding/">MCP onboarding</a>.</p>
 <pre><code>POST /mcp   # JSON-RPC tools/list, tools/call — 200
 GET /mcp    # 405 Method not allowed: use POST /mcp for Streamable HTTP (stateless)</code></pre>`,
   },
   'mcp-onboarding': {
     title: 'MCP onboarding — voltbase',
-    desc: 'Use the four voltbase MCP tools over CLI stdio or Streamable HTTP, with typed errors and per-result attribution.',
+    desc: 'Use the six voltbase MCP tools over CLI stdio or Streamable HTTP, with typed errors and per-result attribution.',
     body: `<h1>MCP onboarding</h1>
-<p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The four tool names are identical on both.</p>
+<p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The six tool names are identical on both.</p>
 <h2>Option A — stdio (local)</h2>
 <pre><code>voltbase mcp</code></pre>
 <p>Stdio mode has full local compute, including the reliability rollups below. Point any MCP-compatible client at the command above.</p>
 <h2>Option B — HTTP (remote)</h2>
 <pre><code>POST /mcp   # JSON-RPC: tools/list, then tools/call
 GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
-<h2>The four tools</h2>
+<h2>The six tools</h2>
 <table><thead><tr><th>Tool</th><th>Arguments</th><th>Answers</th></tr></thead><tbody>
 <tr><td><code>voltbase_search_sites</code></td><td><code>bbox</code>, <code>connector</code>, <code>minPower</code>, <code>openOnly</code>, <code>limit</code>, <code>offset</code></td><td>Paged servable rows plus per-partition attribution credits</td></tr>
 <tr><td><code>voltbase_site_detail</code></td><td><code>id</code> (for example <code>OCM:900000</code>)</td><td>One servable row, or typed <code>NOT_FOUND</code></td></tr>
 <tr><td><code>voltbase_status</code></td><td><code>id</code>, optional <code>after</code> (ISO instant, newer-only polling)</td><td>Status plus the 60-minute stale label; <code>newer:false</code> when nothing is newer than <code>after</code></td></tr>
 <tr><td><code>voltbase_reliability</code></td><td><code>id</code></td><td>Uptime rollups for the site from the prebuilt reliability cut, with attribution; the stale label applies beyond the refresh SLO</td></tr>
+<tr><td><code>voltbase_depot_sessions</code></td><td><code>chargerRef</code>, <code>dialect</code>, <code>openOnly</code>, <code>limit</code>, <code>offset</code></td><td>Paged depot sessions from the simulated corpus with energy Wh, quality flags and the stale label</td></tr>
+<tr><td><code>voltbase_depot_faults</code></td><td><code>chargerRef</code>, <code>limit</code>, <code>offset</code></td><td>Fault sessions plus per-charger fault counts, most-faulted first</td></tr>
 </tbody></table>
 <h2>Rules clients should know</h2>
 <ul><li>Results are JSON-in-text; every served payload carries attribution and provenance.</li><li>Unknown arguments answer typed <code>INVALID_ARGUMENTS</code> (strict schemas, no silent drops).</li><li>Closed or unknown ids answer typed <code>NOT_FOUND</code> — the tools never confirm that a closed row exists.</li><li>BYOK is per request and by name (<code>OCM_API_KEY</code>); key values are never logged, stored or echoed. Missing key means a typed skip, not a failure.</li></ul>`,
@@ -215,6 +236,23 @@ GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
 <h2>BYOK rules</h2>
 <ul><li>Keys arrive per request by environment or header <strong>name</strong>; concurrent callers never cross-read.</li><li>Key values are never logged, persisted, baked into git, or shipped in this Pages artifact.</li><li>Missing key answers a typed <code>UNCONFIGURED</code> skip, not a failure.</li></ul>`,
   },
+  depot: {
+    title: 'Depot — voltbase',
+    desc: 'ChargeLens depot demo: simulated OCPP charging sessions, fault rows, and per-charger counts over a checked-in CC0 corpus.',
+    body: `<h1>Depot</h1>
+<p class="lede">ChargeLens depot demo: four simulated OCPP sessions (1.6J full and hostile flows plus 2.0.1 events) served by the same tools on MCP, REST, and CLI. Snapshot rendered at build time; live rows via <code>GET /api/v1/depot/sessions</code>.</p>
+<h2>Sessions</h2>
+<table><thead><tr><th>Session</th><th>Charger</th><th>Dialect</th><th>Energy</th><th>Flags</th></tr></thead><tbody>
+<tr><td><code>OCPP:cp-16a:1008</code></td><td>cp-16a</td><td>ocpp1.6</td><td>1500 Wh</td><td>—</td></tr>
+<tr><td><code>OCPP:cp-16b:1009</code></td><td>cp-16b</td><td>ocpp1.6</td><td>1500 Wh</td><td>replayedStop, orphanReading</td></tr>
+<tr><td><code>OCPP:cp-16b:1010</code></td><td>cp-16b</td><td>ocpp1.6</td><td>unknown (rolled register)</td><td>energyUnknown</td></tr>
+<tr><td><code>OCPP:cp-201:station-tx-1</code></td><td>cp-201</td><td>ocpp2.0.1</td><td>1500 Wh</td><td>—</td></tr>
+</tbody></table>
+<h2>Faults</h2>
+<p>Fault rows carry data-quality flags other than <code>openSession</code>. Per-charger counts, most-faulted first: <strong>cp-16b: 2 faults</strong>.</p>
+<h2>Method</h2>
+<p>Traces are recorded through a real OCPP client/server pair with schema validation, then normalised deterministically: canonical Wh integers, composite dedupe keys, counted orphans and late readings, and driver identifiers dropped at ingest. Corpus: <code>packages/sessions/corpus/</code>. Tools: <code>voltbase_depot_sessions</code>, <code>voltbase_depot_faults</code>.</p>`,
+  },
   attributions: {
     title: 'Attributions — voltbase',
     desc: 'Per-feed licences and attribution for every row voltbase serves, plus what is excluded and why.',
@@ -228,6 +266,7 @@ GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
 <tr><td>LU Chargy KML</td><td>CC0 1.0 (KML set only)</td><td>Chargy via Chargy — <a href="https://data.public.lu/en/datasets/bornes-de-chargement-publiques-pour-voitures-electriques/">data.public.lu</a></td></tr>
 <tr><td>FR IRVE</td><td>Licence Ouverte / Etalab 2.0</td><td>Operator via IRVE — <a href="https://transport.data.gouv.fr/datasets/base-nationale-des-irve-infrastructures-de-recharge-pour-vehicules-electriques">transport.data.gouv.fr</a></td></tr>
 <tr><td>NOBIL (second wave)</td><td>CC BY 4.0</td><td>Via NOBIL — <a href="https://info.nobil.no/index.php/api">info.nobil.no</a> (not ingested in v0.1)</td></tr>
+<tr><td>Simulated depot traces (ChargeLens demo)</td><td>CC0 1.0 (generated in-repo)</td><td>voltbase simulated CC0 trace — driver identifiers dropped at ingest, charger references only</td></tr>
 </tbody></table>
 <h2>Excluded before serving</h2>
 <ul><li>OCM provider-copyright rows (provider terms, not the CC BY user licence) — filtered via <code>opendata=true</code> before ingest.</li><li>The LU second multi-operator DATEX II set — licence Not Specified, open ticket; only the CC0 Chargy KML is ingested.</li><li>Any row with an unknown or unrecognised licence string — treated as closed, never served.</li></ul>
@@ -237,13 +276,13 @@ GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
     title: 'Legal (DRAFT) — voltbase',
     desc: 'Draft legal notes for voltbase: licences, India data-only scope, and the DPDP Act 2023 note.',
     body: `<h1>Legal — DRAFT</h1>
-<p class="notice"><strong>DRAFT:</strong> everything on this page is a draft pending review. It is engineering due-diligence, not legal advice. Nothing here widens the v0.1 scope (read-only discovery, no sessions, no payments).</p>
+<p class="notice"><strong>DRAFT:</strong> everything on this page is a draft pending review. It is engineering due-diligence, not legal advice. Nothing here widens the v0.1 scope (read-only discovery, simulated demo sessions, no payments).</p>
 <h2>Repository licence</h2>
 <p>Repository and package code is Apache-2.0. Data served through the API and MCP keeps its per-feed licence per row (see <a href="/voltbase/attributions/">Attributions</a>); the served index is a partitioned ODbL Collective Database, not a Derivative Database.</p>
 <h2>India data-only scope — DRAFT</h2>
-<p>India coverage in v0.1 is <strong>data-only</strong>: static OSM-extract rows (ODbL) for discovery, with EU-first live data. No live Indian operator feeds, no sessions, no payments.</p>
+<p>India coverage in v0.1 is <strong>data-only</strong>: static OSM-extract rows (ODbL) for discovery, with EU-first live data. No live Indian operator feeds and no payments; depot sessions are simulated in-repo data, not operator feeds.</p>
 <h2>DPDP Act 2023 note — DRAFT</h2>
-<p>India's Digital Personal Data Protection Act 2023 governs personal data; voltbase v0.1 serves charging-site location records (open data), not personal data, and stores no user data at the edge (stateless, no sessions, no KV/D1). Any future handling of personal data — including consent, notice and retention workflows for India users — must be designed, reviewed and recorded before it ships. This note is a <strong>DRAFT</strong> marker, not a compliance finding.</p>
+<p>India's Digital Personal Data Protection Act 2023 governs personal data; voltbase v0.1 serves charging-site location records (open data), not personal data, and stores no user data at the edge (stateless, no KV/D1). Driver identifiers in depot traces are dropped at ingest; only opaque charger references are served. Any future handling of personal data — including consent, notice and retention workflows for India users — must be designed, reviewed and recorded before it ships. This note is a <strong>DRAFT</strong> marker, not a compliance finding.</p>
 <h2>Per-feed licence drafts</h2>
 <ul><li>OCM user rows: CC BY 4.0 with attribution; provider-copyright rows excluded.</li><li>OSM extracts: ODbL 1.0 share-alike on OSM partitions only.</li><li>NL NDW: CC0; LU Chargy KML: CC0 (second DATEX II set excluded, licence ticket open).</li><li>FR IRVE: Licence Ouverte / Etalab 2.0; NOBIL (second wave): CC BY 4.0.</li></ul>
 <p><strong>DRAFT</strong> — these summaries do not replace the publishers' terms linked from <a href="/voltbase/attributions/">Attributions</a>.</p>
@@ -258,6 +297,7 @@ Allow: /voltbase/quickstart/
 Allow: /voltbase/api-reference/
 Allow: /voltbase/mcp-onboarding/
 Allow: /voltbase/providers/
+Allow: /voltbase/depot/
 Allow: /voltbase/attributions/
 Allow: /voltbase/legal/
 

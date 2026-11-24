@@ -9,7 +9,7 @@ const title = 'MCP onboarding — voltbase';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <meta name="description" content="Use the four voltbase MCP tools over CLI stdio or Streamable HTTP, with typed errors and per-result attribution." />
+    <meta name="description" content="Use the six voltbase MCP tools over CLI stdio or Streamable HTTP, with typed errors and per-result attribution." />
     <link rel="stylesheet" href="/voltbase/styles.css" />
     <link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />
     <base href="/voltbase/" />
@@ -24,13 +24,14 @@ const title = 'MCP onboarding — voltbase';
         <li><a href="/voltbase/api-reference/">API reference</a></li>
         <li><a href="/voltbase/mcp-onboarding/" aria-current="page">MCP onboarding</a></li>
         <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/depot/">Depot</a></li>
         <li><a href="/voltbase/attributions/">Attributions</a></li>
         <li><a href="/voltbase/legal/">Legal</a></li>
       </ul></nav>
     </div></header>
     <div class="wrap"><main id="main" data-pagefind-body>
       <h1>MCP onboarding</h1>
-      <p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The four tool names are identical on both.</p>
+      <p class="lede">One tool set, two transports: CLI stdio for local compute, Streamable HTTP for remote agents. The six tool names are identical on both.</p>
 
       <h2>Option A — stdio (local)</h2>
       <pre><code>voltbase mcp</code></pre>
@@ -40,7 +41,7 @@ const title = 'MCP onboarding — voltbase';
       <pre><code>POST /mcp   # JSON-RPC: tools/list, then tools/call
 GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
 
-      <h2>The four tools</h2>
+      <h2>The six tools</h2>
       <table>
         <thead><tr><th>Tool</th><th>Arguments</th><th>Answers</th></tr></thead>
         <tbody>
@@ -48,6 +49,8 @@ GET /mcp    # 405 — stateless, there is no session stream to hold</code></pre>
           <tr><td><code>voltbase_site_detail</code></td><td><code>id</code> (for example <code>OCM:900000</code>)</td><td>One servable row, or typed <code>NOT_FOUND</code></td></tr>
           <tr><td><code>voltbase_status</code></td><td><code>id</code>, optional <code>after</code> (ISO instant, newer-only polling)</td><td>Status plus the 60-minute stale label; <code>newer:false</code> when nothing is newer than <code>after</code></td></tr>
           <tr><td><code>voltbase_reliability</code></td><td><code>id</code></td><td>Uptime rollups for the site from the prebuilt reliability cut, with attribution; the stale label applies beyond the refresh SLO</td></tr>
+          <tr><td><code>voltbase_depot_sessions</code></td><td><code>chargerRef</code>, <code>dialect</code>, <code>openOnly</code>, <code>limit</code>, <code>offset</code></td><td>Paged depot sessions from the simulated corpus with energy Wh, quality flags and the stale label</td></tr>
+          <tr><td><code>voltbase_depot_faults</code></td><td><code>chargerRef</code>, <code>limit</code>, <code>offset</code></td><td>Fault sessions plus per-charger fault counts, most-faulted first</td></tr>
         </tbody>
       </table>
 

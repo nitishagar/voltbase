@@ -1,6 +1,6 @@
 /**
  * S4 MCP server gates (node pool): the ONE `buildMcpServer` factory serves
- * the 4 locked tools over both transports with JSON-in-text results,
+ * the 6 locked tools over both transports with JSON-in-text results,
  * strict-args, BYOK isolation, S6 reliability rollups on both runtimes (the
  * S4/S5 LOCAL_ONLY stub lane is removed — memory + prebuilt cut serve both),
  * newer-only status polling, and a locked schema contract (IS-04/05/07).
@@ -169,8 +169,64 @@ describe('BYOK isolation + strict args + newer-only (IS-05)', () => {
   });
 });
 
+describe('depot tools (ChargeLens)', () => {
+  it('sessions lists the 4-row corpus with page + attribution + stale label', async () => {
+    const client = await connectClient(deps({ now: () => Date.parse('2026-12-01T00:00:00.000Z') }));
+    const res = parseJson<{ data: Array<{ id: string }>; page: { total: number }; stale: boolean }>(
+      (await client.callTool({ name: 'voltbase_depot_sessions', arguments: {} })) as unknown as ToolText,
+    );
+    expect(res.page.total).toBe(4);
+    expect(res.data.map((r) => r.id).sort()).toEqual(
+      ['OCPP:cp-16a:1008', 'OCPP:cp-16b:1009', 'OCPP:cp-16b:1010', 'OCPP:cp-201:station-tx-1'].sort(),
+    );
+    expect(res.stale).toBe(true);
+    await client.close();
+  });
+
+  it('sessions narrows by chargerRef + dialect and rejects bad args', async () => {
+    const client = await connectClient(deps());
+    const one = parseJson<{ data: Array<{ id: string }> }>(
+      (await client.callTool({ name: 'voltbase_depot_sessions', arguments: { chargerRef: 'CP-16A' } })) as unknown as ToolText,
+    );
+    expect(one.data.map((r) => r.id)).toEqual(['OCPP:cp-16a:1008']);
+    const bad = (await client.callTool({
+      name: 'voltbase_depot_sessions',
+      arguments: { chargerRef: '  ' },
+    })) as unknown as ToolText;
+    expect(bad.isError).toBe(true);
+    expect(parseJson<{ code: string }>(bad).code).toBe('INVALID_ARGUMENTS');
+    await client.close();
+  });
+
+  it('faults returns fault rows + counts with cp-16b most-faulted', async () => {
+    const client = await connectClient(deps());
+    const res = parseJson<{ data: Array<{ id: string }>; counts: Array<{ chargerRef: string; faults: number }> }>(
+      (await client.callTool({ name: 'voltbase_depot_faults', arguments: {} })) as unknown as ToolText,
+    );
+    expect(res.data).toHaveLength(2);
+    expect(res.counts).toEqual([{ chargerRef: 'cp-16b', faults: 2 }]);
+    await client.close();
+  });
+
+  it('depot tools expose meta.rejectedCount and answer UPSTREAM_FAILED on build failure', async () => {
+    const client = await connectClient(deps());
+    const ok = parseJson<{ meta: { rejectedCount: number } }>(
+      (await client.callTool({ name: 'voltbase_depot_sessions', arguments: {} })) as unknown as ToolText,
+    );
+    expect(ok.meta).toEqual({ rejectedCount: 1 });
+    await client.close();
+    const failing = await connectClient(deps({ depotBuild: { ok: false, code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' } }));
+    for (const name of ['voltbase_depot_sessions', 'voltbase_depot_faults'] as const) {
+      const res = (await failing.callTool({ name, arguments: {} })) as unknown as ToolText;
+      expect(res.isError).toBe(true);
+      expect(parseJson<{ code: string }>(res).code).toBe('UPSTREAM_FAILED');
+    }
+    await failing.close();
+  });
+});
+
 describe('schema contract locked (IS-07)', () => {
-  it('exposes exactly the 4 locked tool names, identical local vs remote', async () => {
+  it('exposes exactly the 6 locked tool names, identical local vs remote', async () => {
     const local = await connectClient(deps({ runtime: 'local' }));
     const remote = await connectClient(deps({ runtime: 'remote' }));
     const localNames = ((await local.listTools()).tools.map((t) => t.name) as string[]).sort();
@@ -192,6 +248,8 @@ describe('schema contract locked (IS-07)', () => {
       voltbase_site_detail: ['id'],
       voltbase_status: ['id'],
       voltbase_reliability: ['id'],
+      voltbase_depot_sessions: [],
+      voltbase_depot_faults: [],
     };
     for (const name of TOOL_NAMES) {
       const tool = byName.get(name);

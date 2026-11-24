@@ -2,10 +2,11 @@
 /**
  * scripts/check-ttfb.mjs — S7 local TTFB budget gate.
  *
- * Measures time-to-first-byte for `GET /` and `GET /api/v1/sites` via the
- * in-process Worker app (`app.request`, zero network). Budget: 300 ms per
- * route. The LOCAL-ONLY label is honest: this is an in-process timing, not a
- * network TTFB — network timing lands with the S13 deploy path.
+ * Measures time-to-first-byte for `GET /`, `GET /api/v1/sites`, and the two
+ * depot routes via the in-process Worker app (`app.request`, zero network).
+ * Budget: 300 ms per route. The LOCAL-ONLY label is honest: this is an
+ * in-process timing, not a network TTFB — network timing lands with the
+ * S13 deploy path.
  *
  * Usage: `node scripts/check-ttfb.mjs [--budget=300]`
  * Exit 1 with a FAIL line when any route exceeds the budget.
@@ -42,7 +43,7 @@ const timed = async (path) => {
 const isMain = process.argv[1] !== undefined && process.argv[1].endsWith('check-ttfb.mjs');
 if (isMain) {
   const budget = budgetFromArgs();
-  const routes = ['/', '/api/v1/sites?limit=5&offset=0'];
+  const routes = ['/', '/api/v1/sites?limit=5&offset=0', '/api/v1/depot/sessions?limit=5&offset=0', '/api/v1/depot/faults?limit=5'];
   let failed = false;
   for (const path of routes) {
     const { status, ms } = await timed(path);

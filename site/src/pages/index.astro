@@ -24,6 +24,7 @@ const title = 'voltbase — open-core EV charging-data tooling';
         <li><a href="/voltbase/api-reference/">API reference</a></li>
         <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
         <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/depot/">Depot</a></li>
         <li><a href="/voltbase/attributions/">Attributions</a></li>
         <li><a href="/voltbase/legal/">Legal</a></li>
       </ul></nav>
@@ -39,10 +40,10 @@ const title = 'voltbase — open-core EV charging-data tooling';
       <div class="grid-3">
         <section class="card"><h3>1. Normalise</h3><p>OCM, OSM extracts, OCPI 2.2.1 and DATEX II feeds map into one core row with a per-row source and licence partition key. Unknown licences are treated as closed and never served.</p></section>
         <section class="card"><h3>2. Serve</h3><p>A stateless edge API serves servable rows only, each with source, retrieved-at and attribution. Stale rows carry a stale label, never silent empties.</p></section>
-        <section class="card"><h3>3. Ask</h3><p>The same four tools answer over CLI stdio (<code>voltbase mcp</code>) and over HTTP (<code>POST /mcp</code>), with typed errors where a capability is local-only.</p></section>
+        <section class="card"><h3>3. Ask</h3><p>The same six tools answer over CLI stdio (<code>voltbase mcp</code>) and over HTTP (<code>POST /mcp</code>), with typed errors where a capability is local-only.</p></section>
       </div>
       <h2>Pricing</h2>
-      <p><strong>Free self-serve (v0.1):</strong> everything in these docs — normalisation, discovery API and MCP over open data. <strong>Paid self-serve:</strong> placeholder — no payments, sessions or billing exist in v0.1 (see <a href="/voltbase/legal/">Legal</a>).</p>
+      <p><strong>Free self-serve (v0.1):</strong> everything in these docs — normalisation, discovery API and MCP over open data, plus the simulated depot demo. <strong>Paid self-serve:</strong> placeholder — no payments or billing exist in v0.1; depot sessions are simulated demo data (see <a href="/voltbase/legal/">Legal</a>).</p>
       <h2>Open data only</h2>
       <p>Every example on this site uses open-licenced rows: NL NDW (CC0), LU Chargy KML (CC0), FR IRVE (Licence Ouverte / Etalab), OCM open rows (CC BY 4.0) and OSM extracts (ODbL). Provider-copyright and unclear-licence rows are excluded before serving — see <a href="/voltbase/attributions/">Attributions</a>.</p>
     </main></div>

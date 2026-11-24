@@ -13,11 +13,11 @@ export const CORE_PACKAGE = '@voltbase/core';
 /** Per-row licence. UNKNOWN rows are closed by the licence filter. */
 export type Licence = 'CC0-1.0' | 'Etalab-2.0' | 'CC-BY-4.0' | 'ODbL-1.0' | 'CLOSED' | 'UNKNOWN';
 
-/** Ingest source. One mapper per source in `@voltbase/normalise`. */
-export type Source = 'OCM' | 'OSM' | 'OCPI' | 'DATEX2';
+/** Ingest source. One mapper per source in `@voltbase/normalise`; OCPP rows come from `@voltbase/sessions`. */
+export type Source = 'OCM' | 'OSM' | 'OCPI' | 'DATEX2' | 'OCPP';
 
-/** v0.1 serves a single feature type (ADR-003 test 2 granularity). */
-export type FeatureType = 'ChargePoint';
+/** Served feature types (ADR-003 test 2 granularity). */
+export type FeatureType = 'ChargePoint' | 'ChargeSession';
 
 /** Country-level regional cut, e.g. `'NL'`. Validated, not branded. */
 export type RegionalCut = string;
@@ -67,17 +67,65 @@ export interface ChargePoint {
   provenance: Provenance;
 }
 
+/** OCPP wire dialect a session row was normalised from. */
+export type SessionDialect = 'ocpp1.6' | 'ocpp2.0.1';
+
+/** Data-quality flags on a session row (never silent: flags ride the row). */
+export type SessionQualityFlag = 'energyUnknown' | 'openSession' | 'orphanReading' | 'lateReading' | 'replayedStop';
+
+/**
+ * Depot session row (ChargeLens). Canonical energy unit is Wh integers;
+ * kWh display conversion happens at serve time. Driver identifiers never
+ * reach this shape (dropped at the adapter, I7).
+ */
+export interface SessionRow extends LicencedRow {
+  id: string;
+  featureType: 'ChargeSession';
+  regionalCut: string;
+  source: 'OCPP';
+  /** Opaque charger reference (normalised identity string). */
+  chargerRef: string;
+  connectorId: number;
+  dialect: SessionDialect;
+  startedAt: string;
+  endedAt: string | null;
+  openSession: boolean;
+  /** Session energy in Wh; null when registers are missing or rolled over. */
+  energyWh: number | null;
+  meterStartWh: number | null;
+  meterStopWh: number | null;
+  qualityFlags: SessionQualityFlag[];
+  orphanCount: number;
+  lateCount: number;
+  replayCount: number;
+  attribution: Attribution;
+  provenance: Provenance;
+}
+
 /** ADR-003 partition key tuple: `(feature_type, regional_cut, source, licence)`. */
 export type PartitionKey = readonly [FeatureType, string, Source, Licence];
 
+/** Minimal shape carrying licence state (shared by site and session rows). */
+export interface LicencedRow {
+  licence: Licence;
+  providerCopyrighted: boolean;
+}
+
+/** Minimal shape carrying a partition key (shared by site and session rows). */
+export interface PartitionedRow extends LicencedRow {
+  featureType: FeatureType;
+  regionalCut: string;
+  source: Source;
+}
+
 /** Partition key tuple for a row (stable field order, no serialisation). */
-export function partitionKey(site: ChargePoint): PartitionKey {
-  return [site.featureType, site.regionalCut, site.source, site.licence];
+export function partitionKey(row: PartitionedRow): PartitionKey {
+  return [row.featureType, row.regionalCut, row.source, row.licence];
 }
 
 /** Delimited partition key for use as a map key or log label. */
-export function partitionKeyString(site: ChargePoint): string {
-  return `${site.featureType}|${site.regionalCut}|${site.source}|${site.licence}`;
+export function partitionKeyString(row: PartitionedRow): string {
+  return `${row.featureType}|${row.regionalCut}|${row.source}|${row.licence}`;
 }
 
 /**
@@ -85,9 +133,9 @@ export function partitionKeyString(site: ChargePoint): string {
  * served. Validators (in `@voltbase/normalise`) handle data quality; this
  * function handles licence boundary only.
  */
-export function isServable(site: Pick<ChargePoint, 'licence' | 'providerCopyrighted'>): boolean {
-  if (site.providerCopyrighted) return false;
-  return site.licence !== 'UNKNOWN' && site.licence !== 'CLOSED';
+export function isServable(row: LicencedRow): boolean {
+  if (row.providerCopyrighted) return false;
+  return row.licence !== 'UNKNOWN' && row.licence !== 'CLOSED';
 }
 
 const ULID_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';

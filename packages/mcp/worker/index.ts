@@ -24,6 +24,7 @@
  */
 import { Hono } from 'hono';
 import { createMcpHandler } from 'agents/mcp/server';
+import type { BuildDepotResult } from '@voltbase/sessions';
 import { STAGE } from '../../../src/lib/stage.ts';
 import { buildMcpServer } from '../src/server.ts';
 import { mcpComposition } from './composition.ts';
@@ -39,7 +40,14 @@ import {
   withResponseHeaders,
   type KeyGateEnv,
 } from './guards.ts';
-import { errorJson, handleGetSite, handleGetStatus, handleListSites } from './routes.ts';
+import {
+  errorJson,
+  handleGetSite,
+  handleGetStatus,
+  handleListDepotFaults,
+  handleListDepotSessions,
+  handleListSites,
+} from './routes.ts';
 import {
   handleGetReliability,
   runScheduledPoll,
@@ -54,6 +62,8 @@ export interface WorkerEnv extends KeyGateEnv {
 export interface AppOptions {
   now?: () => number;
   rateLimit?: { limit: number; windowMs: number };
+  /** Depot build override (tests inject failure; production uses the module build). */
+  depotBuild?: BuildDepotResult;
 }
 
 const DEFAULT_RATE_LIMIT = 60;
@@ -158,6 +168,13 @@ export const createApp = (
 
   app.get('/api/v1/sites', (c) => handleListSites(c));
   app.get('/api/v1/sites/:id', (c) => handleGetSite(c));
+  const depotBuild = opts.depotBuild;
+  app.get('/api/v1/depot/sessions', (c) =>
+    handleListDepotSessions(c, depotBuild === undefined ? { now } : { now, depotBuild }),
+  );
+  app.get('/api/v1/depot/faults', (c) =>
+    handleListDepotFaults(c, depotBuild === undefined ? { now } : { now, depotBuild }),
+  );
   app.get('/api/v1/status/:id', (c) => handleGetStatus(c, { now }));
   app.get('/api/v1/reliability/:id', (c) => handleGetReliability(c, { now }));
 

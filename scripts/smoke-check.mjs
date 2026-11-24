@@ -5,7 +5,7 @@
  * GET / (contains "voltbase") + GET /healthz ({"ok":true,"stage":8}) + the S3
  * API slice: search (/api/v1/sites), site detail, and status (stale-labelled,
  * fixtures predate the 60min SLO) with security + request-id headers present
- * + the S4 MCP slice: POST /mcp tools/list (4 locked tools) and GET /mcp 405.
+ * + the S4 MCP slice: POST /mcp tools/list (6 locked tools) and GET /mcp 405.
  */
 import { app } from '../packages/mcp/worker/index.ts';
 import { STAGE } from '../src/lib/stage.ts';
@@ -90,7 +90,7 @@ const mcpList = await app.request('/mcp', {
 });
 const mcpText = await mcpList.text();
 check(mcpList.status === 200, `POST /mcp status ${mcpList.status}, expected 200`);
-for (const name of ['voltbase_search_sites', 'voltbase_site_detail', 'voltbase_status', 'voltbase_reliability']) {
+for (const name of ['voltbase_search_sites', 'voltbase_site_detail', 'voltbase_status', 'voltbase_reliability', 'voltbase_depot_sessions', 'voltbase_depot_faults']) {
   check(mcpText.includes(name), `POST /mcp tools/list missing ${name}`);
 }
 check(

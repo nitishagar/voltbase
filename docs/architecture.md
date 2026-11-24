@@ -29,10 +29,12 @@
    keep their own 4-tuple partition key and per-partition attribution. Serve
    time filters per row and never joins OSM with non-OSM rows (ADR-003).
 4. Serve: the stateless edge API (`GET /api/v1/sites`, `:id`, `status/:id`,
-   `reliability/:id`) and the four MCP tools (`voltbase_search_sites`,
-   `voltbase_site_detail`, `voltbase_status`, `voltbase_reliability`) read the
-   same servable-only index. Closed/self ids answer typed `NOT_FOUND` on every
-   surface — never a closed signal.
+   `reliability/:id`, `depot/sessions`, `depot/faults`) and the six MCP tools
+   (`voltbase_search_sites`, `voltbase_site_detail`, `voltbase_status`,
+   `voltbase_reliability`, `voltbase_depot_sessions`, `voltbase_depot_faults`)
+   read the same servable-only indexes. Closed/self ids answer typed
+   `NOT_FOUND` on every surface — never a closed signal. Depot sessions ride
+   the non-OSM side of the partition discipline (simulated CC0 traces).
 
 ## Licence boundary (ADR-003, IS-01)
 

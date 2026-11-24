@@ -9,6 +9,8 @@
  */
 import type { Context } from 'hono';
 import { MAX_POWER_KW } from '@voltbase/normalise';
+import { depotFaults, faultCountsByCharger, filterSessions, type BuildDepotResult } from '@voltbase/sessions';
+import { DEPOT_BUILD, DEPOT_REJECTED_COUNT, DEPOT_RETRIEVED_AT, SERVABLE_SESSIONS } from './depot.ts';
 import { filterSites, findServableById, resultAttribution, staleInfo, type BBox } from './store.ts';
 
 export type ApiErrorCode =
@@ -25,6 +27,8 @@ export const errorJson = (code: ApiErrorCode, status: number, message: string): 
 
 export interface RouteDeps {
   now: () => number;
+  /** Depot build override (tests inject failure; production uses the module build). */
+  depotBuild?: BuildDepotResult;
 }
 
 const MAX_LIMIT = 100;
@@ -123,6 +127,73 @@ export const handleGetSite = (c: Context): Response => {
   const site = raw === undefined ? undefined : findServableById(decodeId(raw));
   if (site === undefined) return errorJson('NOT_FOUND', 404, 'unknown site id');
   return Response.json({ data: site });
+};
+
+/** Depot build failed (injected in tests; static corpus keeps it ok in production). */
+const depotFailed = (deps: RouteDeps): boolean => !(deps.depotBuild ?? DEPOT_BUILD).ok;
+
+/** GET /api/v1/depot/sessions?chargerRef=&dialect=&openOnly=&limit=&offset= */
+export const handleListDepotSessions = (c: Context, deps: RouteDeps): Response => {
+  if (depotFailed(deps)) return errorJson('UPSTREAM_FAILED', 503, 'depot corpus is empty');
+  const params = new URL(c.req.url).searchParams;
+  const paging = parseLimitOffset(params);
+  if (!paging.ok) return errorJson('INVALID_ARGUMENTS', 400, paging.message);
+  const openOnly = parseOpenOnly(params);
+  if (!openOnly.ok) return errorJson('INVALID_ARGUMENTS', 400, openOnly.message);
+
+  const rawCharger = params.get('chargerRef');
+  if (rawCharger !== null && (rawCharger.trim() === '' || rawCharger.length > 64)) {
+    return errorJson('INVALID_ARGUMENTS', 400, 'chargerRef must be a non-empty string of at most 64 chars');
+  }
+  const rawDialect = params.get('dialect');
+  if (rawDialect !== null && rawDialect !== '' && rawDialect !== 'ocpp1.6' && rawDialect !== 'ocpp2.0.1') {
+    return errorJson('INVALID_ARGUMENTS', 400, 'dialect must be ocpp1.6 or ocpp2.0.1');
+  }
+
+  const filtered = filterSessions(SERVABLE_SESSIONS, {
+    ...(rawCharger === null || rawCharger === '' ? {} : { chargerRef: rawCharger }),
+    ...(rawDialect === null || rawDialect === '' ? {} : { dialect: rawDialect as 'ocpp1.6' | 'ocpp2.0.1' }),
+    openOnly: openOnly.openOnly,
+  });
+  const data = filtered.slice(paging.offset, paging.offset + paging.limit);
+  const info = staleInfo(DEPOT_RETRIEVED_AT, deps.now());
+  return Response.json({
+    data,
+    page: { limit: paging.limit, offset: paging.offset, total: filtered.length },
+    attribution: resultAttribution(data),
+    meta: { rejectedCount: DEPOT_REJECTED_COUNT },
+    stale: info.stale,
+    ...(info.reason === undefined ? {} : { staleReason: info.reason }),
+  });
+};
+
+/** GET /api/v1/depot/faults?chargerRef=&limit= — fault rows + per-charger counts. */
+export const handleListDepotFaults = (c: Context, deps: RouteDeps): Response => {
+  if (depotFailed(deps)) return errorJson('UPSTREAM_FAILED', 503, 'depot corpus is empty');
+  const params = new URL(c.req.url).searchParams;
+  if (params.get('offset') !== null) {
+    return errorJson('INVALID_ARGUMENTS', 400, 'offset is not supported on faults (limit only)');
+  }
+  const paging = parseLimitOffset(params);
+  if (!paging.ok) return errorJson('INVALID_ARGUMENTS', 400, paging.message);
+
+  const rawCharger = params.get('chargerRef');
+  if (rawCharger !== null && (rawCharger.trim() === '' || rawCharger.length > 64)) {
+    return errorJson('INVALID_ARGUMENTS', 400, 'chargerRef must be a non-empty string of at most 64 chars');
+  }
+
+  const filtered = depotFaults(SERVABLE_SESSIONS, rawCharger === null || rawCharger === '' ? undefined : rawCharger);
+  const data = filtered.slice(0, paging.limit);
+  const info = staleInfo(DEPOT_RETRIEVED_AT, deps.now());
+  return Response.json({
+    data,
+    counts: faultCountsByCharger(filtered),
+    page: { limit: paging.limit, offset: 0, total: filtered.length },
+    attribution: resultAttribution(data),
+    meta: { rejectedCount: DEPOT_REJECTED_COUNT },
+    stale: info.stale,
+    ...(info.reason === undefined ? {} : { staleReason: info.reason }),
+  });
 };
 
 /** GET /api/v1/status/:id — live status + stale label against the refresh SLO. */

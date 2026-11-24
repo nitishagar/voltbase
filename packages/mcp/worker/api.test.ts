@@ -245,6 +245,103 @@ describe('headers, identity, attribution, partitions', () => {
     for (const classes of byCut.values()) expect(classes.size).toBe(1);
   });
 
+  it('depot sessions list + narrow by chargerRef/dialect/openOnly', async () => {
+    const app = createApp({}, { now: () => Date.parse('2026-12-01T00:00:00.000Z') });
+    const all = (await (await app.request('/api/v1/depot/sessions?limit=20&offset=0')).json()) as {
+      data: Array<{ id: string }>;
+      page: { total: number };
+      stale: boolean;
+    };
+    expect(all.page.total).toBe(4);
+    expect(all.data).toHaveLength(4);
+    expect(all.stale).toBe(true);
+    const one = (await (await app.request('/api/v1/depot/sessions?chargerRef=CP-16A')).json()) as {
+      data: Array<{ id: string }>;
+    };
+    expect(idsOf(one)).toEqual(['OCPP:cp-16a:1008']);
+    const hostile = (await (await app.request('/api/v1/depot/sessions?dialect=ocpp2.0.1')).json()) as {
+      data: Array<{ id: string }>;
+    };
+    expect(idsOf(hostile)).toEqual(['OCPP:cp-201:station-tx-1']);
+    const open = (await (await app.request('/api/v1/depot/sessions?openOnly=true')).json()) as {
+      data: Array<{ id: string }>;
+    };
+    expect(open.data).toHaveLength(0);
+  });
+
+  it('depot faults list fault rows + per-charger counts, most-faulted first', async () => {
+    const body = (await (await createApp({}).request('/api/v1/depot/faults?limit=20')).json()) as {
+      data: Array<{ id: string }>;
+      counts: Array<{ chargerRef: string; faults: number }>;
+      page: { total: number };
+      meta: { rejectedCount: number };
+    };
+    expect(body.page.total).toBe(2);
+    expect(body.counts).toEqual([{ chargerRef: 'cp-16b', faults: 2 }]);
+    expect(body.meta).toEqual({ rejectedCount: 1 });
+  });
+
+  it('depot routes reject bad dialect/limit/chargerRef/offset-on-faults with typed 400s', async () => {
+    const app = createApp({});
+    for (const path of [
+      '/api/v1/depot/sessions?dialect=soap',
+      '/api/v1/depot/sessions?limit=0',
+      '/api/v1/depot/sessions?chargerRef=%20',
+      '/api/v1/depot/faults?limit=101',
+      '/api/v1/depot/faults?offset=5',
+    ]) {
+      const res = await app.request(path);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: { code: 'INVALID_ARGUMENTS', message: expect.any(String) as unknown } });
+    }
+  });
+
+  it('depot routes answer UPSTREAM_FAILED when the build fails (injected)', async () => {
+    const app = createApp({}, { depotBuild: { ok: false, code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' } });
+    for (const path of ['/api/v1/depot/sessions', '/api/v1/depot/faults']) {
+      const res = await app.request(path);
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: { code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' } });
+    }
+  });
+
+  it('depot payloads carry no driver ids, full attribution, and OCPP-only sources', async () => {
+    const app = createApp({});
+    for (const path of ['/api/v1/depot/sessions?limit=20', '/api/v1/depot/faults?limit=20']) {
+      const res = await app.request(path);
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      expect(text).not.toContain('DRIVER-A');
+      expect(text).not.toContain('DRIVER-B');
+      const body = JSON.parse(text) as {
+        data: Array<{
+          source: string;
+          attribution: { text: string };
+          provenance: { source: string; retrievedAt: string; attribution: { text: string } };
+        }>;
+      };
+      expect(body.data.length).toBeGreaterThan(0);
+      for (const row of body.data) {
+        expect(row.source).toBe('OCPP');
+        expect(row.attribution.text.length).toBeGreaterThan(0);
+        expect(row.provenance.source).toBe('OCPP');
+        expect(row.provenance.retrievedAt.length).toBeGreaterThan(0);
+        expect(row.provenance.attribution.text).toBe(row.attribution.text);
+      }
+    }
+  });
+
+  it('depot rows carry complete partition keys on the non-OSM side', async () => {
+    const body = (await (await createApp({}).request('/api/v1/depot/sessions?limit=20')).json()) as {
+      data: Array<{ id: string; featureType: string; regionalCut: string; source: string; licence: string }>;
+    };
+    for (const row of body.data) {
+      expect([row.featureType, row.regionalCut, row.source, row.licence].every((p) => typeof p === 'string' && p !== '')).toBe(true);
+      expect(row.id.startsWith(`${row.source}:`)).toBe(true);
+      expect(row.source === 'OSM').toBe(false);
+    }
+  });
+
   it('answers CORS preflight on the API surface without a key', async () => {
     const app = createApp({ VOLTBASE_API_KEY: 'free-key-1' });
     const res = await app.request('/api/v1/sites?limit=1', { method: 'OPTIONS' });

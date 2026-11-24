@@ -1,0 +1,27 @@
+{
+  "name": "@voltbase/sessions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@voltbase/core": "*",
+    "@voltbase/normalise": "*"
+  },
+  "devDependencies": {
+    "ocpp-ws-io": "3.1.0"
+  }
+}

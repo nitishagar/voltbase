@@ -14,6 +14,7 @@ export default defineConfig({
       'packages/core/vitest.config.ts',
       'packages/normalise/vitest.config.ts',
       'packages/providers/vitest.config.ts',
+      'packages/sessions/vitest.config.ts',
       'packages/mcp/vitest.config.ts',
       'packages/mcp/vitest.worker.config.ts',
       'site/vitest.config.ts',

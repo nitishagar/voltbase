@@ -5,7 +5,7 @@ import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
-const SLUGS = ['index', 'quickstart', 'api-reference', 'mcp-onboarding', 'providers', 'attributions', 'legal'];
+const SLUGS = ['index', 'quickstart', 'api-reference', 'mcp-onboarding', 'providers', 'depot', 'attributions', 'legal'];
 
 const htmlPath = (slug: string): string =>
   slug === 'index' ? join(dist, 'index.html') : join(dist, slug, 'index.html');
@@ -27,7 +27,7 @@ const CLOSED_IDS = ['OCM:910001', 'DATEX2:LU-2ND-001', 'DATEX2:FR-UNK-001', 'OCM
 const CLOSED_NAMES = ['Proprietary Netz', 'Delhi Discom', 'Fleet Operator Pvt Ltd', 'Multi-Operator Pool'];
 
 describe('site S5 gates', () => {
-  it('build emits index.html plus one html file per page (7 pages)', () => {
+  it('build emits index.html plus one html file per page (8 pages)', () => {
     for (const slug of SLUGS) {
       expect(existsSync(htmlPath(slug)), `missing ${slug}`).toBe(true);
       const html = readHtml(slug);
@@ -153,6 +153,16 @@ describe('site S5 gates', () => {
     expect(css).not.toContain('fetch(');
   });
 
+  it('depot page shows session ids + attribution with no driver identifiers', () => {
+    const html = readHtml('depot');
+    for (const id of ['OCPP:cp-16a:1008', 'OCPP:cp-16b:1009', 'OCPP:cp-16b:1010', 'OCPP:cp-201:station-tx-1']) {
+      expect(html, `depot missing ${id}`).toContain(id);
+    }
+    expect(html).toContain('cp-16b: 2 faults');
+    expect(html).not.toContain('DRIVER-A');
+    expect(html).not.toContain('DRIVER-B');
+  });
+
   it('BYOK is names-only: key names present, no key values or secret shapes', () => {
     const html = allHtml();
     expect(html).toContain('OCM_API_KEY');
@@ -178,6 +188,8 @@ describe('site S5 gates', () => {
       '"stage":8',
       'limit',
       'offset',
+      '/api/v1/depot/sessions',
+      '/api/v1/depot/faults',
     ]) {
       expect(ref, `api-reference missing ${token}`).toContain(token);
     }
@@ -190,6 +202,8 @@ describe('site S5 gates', () => {
       'voltbase_site_detail',
       'voltbase_status',
       'voltbase_reliability',
+      'voltbase_depot_sessions',
+      'voltbase_depot_faults',
       'voltbase mcp',
       'NOT_FOUND',
       'INVALID_ARGUMENTS',
@@ -279,20 +293,20 @@ describe('site completeness emit (S15)', () => {
     expect(existsSync(join(dist, 'index.html')), '404 home link target').toBe(true);
   });
 
-  it('emits sitemap.xml over exactly the 7 canonical pages', () => {
+  it('emits sitemap.xml over exactly the 8 canonical pages', () => {
     const xml = readFileSync(join(dist, 'sitemap.xml'), 'utf8');
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1] ?? '');
-    expect(locs).toHaveLength(7);
+    expect(locs).toHaveLength(8);
     for (const loc of locs) {
       expect(loc.startsWith('https://nitishagar.github.io/voltbase/'), `loc ${loc}`).toBe(true);
     }
     expect(locs).toContain('https://nitishagar.github.io/voltbase/');
   });
 
-  it('pagefind fallback index stays exactly 7 entries (real-binary path emits no fallback file)', () => {
+  it('pagefind fallback index stays exactly 8 entries (real-binary path emits no fallback file)', () => {
     const fallback = join(dist, 'pagefind', 'pagefind-index.json');
     if (!existsSync(fallback)) return; // real pagefind binary ran; no fallback file
     const parsed = JSON.parse(readFileSync(fallback, 'utf8')) as { entries: unknown[] };
-    expect(parsed.entries).toHaveLength(7);
+    expect(parsed.entries).toHaveLength(8);
   });
 });

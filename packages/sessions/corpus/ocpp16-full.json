@@ -1,0 +1,31 @@
+{
+  "charger": "CP-16A",
+  "dialect": "ocpp1.6",
+  "retrievedAt": "2026-11-24T10:00:00.000Z",
+  "licenceHint": "CC0-1.0",
+  "events16": [
+    {
+      "type": "start",
+      "transactionId": 1008,
+      "connectorId": 1,
+      "idTag": "DRIVER-A",
+      "meterStartWh": 1000,
+      "at": "2026-11-24T10:00:00.000Z"
+    },
+    {
+      "type": "meter",
+      "connectorId": 1,
+      "transactionId": 1008,
+      "valueWh": 1500,
+      "measurand": "Energy.Active.Import.Register",
+      "unit": "Wh",
+      "at": "2026-11-24T10:01:00.000Z"
+    },
+    {
+      "type": "stop",
+      "transactionId": 1008,
+      "meterStopWh": 2500,
+      "at": "2026-11-24T10:02:00.000Z"
+    }
+  ]
+}

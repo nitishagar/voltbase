@@ -62,7 +62,14 @@ describe('e2e journey (lightweight, no browser)', () => {
 
     const client = await connectClient({ now: Date.now, runtime: 'local' });
     const tools = (await client.listTools()).tools.map((t) => t.name);
-    for (const name of ['voltbase_search_sites', 'voltbase_site_detail', 'voltbase_status', 'voltbase_reliability']) {
+    for (const name of [
+      'voltbase_search_sites',
+      'voltbase_site_detail',
+      'voltbase_status',
+      'voltbase_reliability',
+      'voltbase_depot_sessions',
+      'voltbase_depot_faults',
+    ]) {
       expect(tools).toContain(name);
     }
     await client.close();
@@ -115,6 +122,49 @@ describe('e2e journey (lightweight, no browser)', () => {
     };
     expect(mcpDetail.data.id).toBe(restDetail.data.id);
     await client.close();
+  });
+
+  it('MCP depot → REST parity (sessions + faults, same deep rows)', async () => {
+    const app = createApp({});
+    const rest = (await (await app.request('/api/v1/depot/sessions?limit=20&offset=0')).json()) as {
+      data: unknown[];
+      page: { total: number };
+    };
+    const client = await connectClient({ now: Date.now, runtime: 'local' });
+    const mcp = parseJson<{ data: unknown[]; page: { total: number } }>(
+      (await client.callTool({ name: 'voltbase_depot_sessions', arguments: { limit: 20, offset: 0 } })) as unknown as ToolText,
+    );
+    expect(mcp.page.total).toBe(rest.page.total);
+    expect(mcp.data).toEqual(rest.data);
+    const restFaults = (await (await app.request('/api/v1/depot/faults?limit=20')).json()) as {
+      data: unknown[];
+      counts: Array<{ chargerRef: string; faults: number }>;
+    };
+    const mcpFaults = parseJson<{ data: unknown[]; counts: Array<{ chargerRef: string; faults: number }> }>(
+      (await client.callTool({ name: 'voltbase_depot_faults', arguments: { limit: 20 } })) as unknown as ToolText,
+    );
+    expect(mcpFaults.data).toEqual(restFaults.data);
+    expect(mcpFaults.counts).toEqual(restFaults.counts);
+    expect(mcpFaults.counts[0]).toEqual({ chargerRef: 'cp-16b', faults: 2 });
+    await client.close();
+  });
+
+  it('CLI depot sessions rows equal REST rows for the same args', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const app = createApp({});
+    const rest = (await (await app.request('/api/v1/depot/sessions?limit=20&offset=0')).json()) as { data: unknown[] };
+    const cli = spawnSync('node', ['packages/cli/bin/voltbase.js', 'depot', 'sessions', '--limit', '20'], { encoding: 'utf8' });
+    expect(cli.status).toBe(0);
+    expect((JSON.parse(cli.stdout) as { data: unknown[] }).data).toEqual(rest.data);
+  });
+
+  it('CLI depot faults rows equal REST rows for the same args', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const app = createApp({});
+    const restFaults = (await (await app.request('/api/v1/depot/faults?limit=20')).json()) as { data: unknown[] };
+    const cliFaults = spawnSync('node', ['packages/cli/bin/voltbase.js', 'depot', 'faults', '--limit', '20'], { encoding: 'utf8' });
+    expect(cliFaults.status).toBe(0);
+    expect((JSON.parse(cliFaults.stdout) as { data: unknown[] }).data).toEqual(restFaults.data);
   });
 
   it('reliability rollup is served on REST and MCP', async () => {

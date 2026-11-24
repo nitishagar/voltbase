@@ -17,6 +17,7 @@ import {
   stableId,
   type ChargePoint,
   type Connector,
+  type LicencedRow,
   type Licence,
   type Source,
   type Status,
@@ -519,25 +520,25 @@ export function validateChargePoint(site: ChargePoint): ValidationIssue[] {
 /* ------------------------------------------------------------------ */
 
 /** Close UNKNOWN licences in place-value (returns a copy, input untouched). */
-export function closeUnknownLicence(site: ChargePoint): ChargePoint {
-  if (site.licence !== 'UNKNOWN') return site;
-  return { ...site, licence: 'CLOSED' };
+export function closeUnknownLicence<T extends LicencedRow>(row: T): T {
+  if (row.licence !== 'UNKNOWN') return row;
+  return { ...row, licence: 'CLOSED' };
 }
 
 /**
  * Apply the licence boundary to a batch: UNKNOWN rows become CLOSED, then
  * the batch splits into servable vs closed via `isServable()`.
  */
-export function licenceFilter(sites: readonly ChargePoint[]): {
-  servable: ChargePoint[];
-  closed: ChargePoint[];
+export function licenceFilter<T extends LicencedRow>(rows: readonly T[]): {
+  servable: T[];
+  closed: T[];
 } {
-  const servable: ChargePoint[] = [];
-  const closed: ChargePoint[] = [];
-  for (const site of sites) {
-    const row = closeUnknownLicence(site);
-    if (isServable(row)) servable.push(row);
-    else closed.push(row);
+  const servable: T[] = [];
+  const closed: T[] = [];
+  for (const row of rows) {
+    const closedRow = closeUnknownLicence(row);
+    if (isServable(closedRow)) servable.push(closedRow);
+    else closed.push(closedRow);
   }
   return { servable, closed };
 }

@@ -24,6 +24,7 @@
     "@voltbase/core": "*",
     "@voltbase/normalise": "*",
     "@voltbase/providers": "*",
+    "@voltbase/sessions": "*",
     "agents": "0.23.0",
     "hono": "4.13.7",
     "zod": "4.6.5"

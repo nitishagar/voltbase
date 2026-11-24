@@ -85,11 +85,11 @@ export const staleInfo = (
 };
 
 /** Unique per-partition attribution over a result set (credit preserved end-to-end, IS-03/IS-04). */
-export const resultAttribution = (sites: ReadonlyArray<ChargePoint>): Attribution[] => {
+export const resultAttribution = <T extends { attribution: Attribution }>(rows: ReadonlyArray<T>): Attribution[] => {
   const seen = new Map<string, Attribution>();
-  for (const site of sites) {
-    const key = `${site.attribution.text}|${site.attribution.url ?? ''}`;
-    if (!seen.has(key)) seen.set(key, site.attribution);
+  for (const row of rows) {
+    const key = `${row.attribution.text}|${row.attribution.url ?? ''}`;
+    if (!seen.has(key)) seen.set(key, row.attribution);
   }
   return [...seen.values()];
 };

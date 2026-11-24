@@ -1,0 +1,37 @@
+{
+  "charger": "CP-201",
+  "dialect": "ocpp2.0.1",
+  "retrievedAt": "2026-11-24T10:00:00.000Z",
+  "licenceHint": "CC0-1.0",
+  "events201": [
+    {
+      "type": "started",
+      "transactionId": "station-tx-1",
+      "evseId": 1,
+      "connectorId": 1,
+      "seqNo": 0,
+      "meterWh": 1000,
+      "measurand": "Energy.Active.Import.Register",
+      "unit": "Wh",
+      "at": "2026-11-24T10:00:00.000Z"
+    },
+    {
+      "type": "updated",
+      "transactionId": "station-tx-1",
+      "seqNo": 1,
+      "meterWh": 1800,
+      "measurand": "Energy.Active.Import.Register",
+      "unit": "Wh",
+      "at": "2026-11-24T10:01:00.000Z"
+    },
+    {
+      "type": "ended",
+      "transactionId": "station-tx-1",
+      "seqNo": 2,
+      "meterWh": 2500,
+      "measurand": "Energy.Active.Import.Register",
+      "unit": "Wh",
+      "at": "2026-11-24T10:02:00.000Z"
+    }
+  ]
+}

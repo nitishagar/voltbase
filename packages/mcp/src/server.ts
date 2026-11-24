@@ -26,6 +26,7 @@ import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { MAX_POWER_KW } from '@voltbase/normalise';
 import { WriteBudget, getReliability } from '@voltbase/providers';
+import { depotFaults, faultCountsByCharger, filterSessions, type BuildDepotResult } from '@voltbase/sessions';
 import {
   filterSites,
   findServableById,
@@ -33,6 +34,7 @@ import {
   staleInfo,
   type BBox,
 } from '../worker/store.ts';
+import { DEPOT_BUILD, DEPOT_REJECTED_COUNT, DEPOT_RETRIEVED_AT, SERVABLE_SESSIONS } from '../worker/depot.ts';
 import { validatePublicHttpUrl } from '../worker/guards.ts';
 import { z } from 'zod';
 
@@ -44,14 +46,18 @@ export interface McpDeps {
   ocmKey?: string;
   /** `local` = CLI stdio (full compute); `remote` = Worker HTTP (no local compute). */
   runtime: 'local' | 'remote';
+  /** Depot build override (tests inject failure; production uses the module build). */
+  depotBuild?: BuildDepotResult;
 }
 
-/** The four locked tool names (IS-07: identical on stdio and HTTP). */
+/** The six locked tool names (IS-07: identical on stdio and HTTP). */
 export const TOOL_NAMES = [
   'voltbase_search_sites',
   'voltbase_site_detail',
   'voltbase_status',
   'voltbase_reliability',
+  'voltbase_depot_sessions',
+  'voltbase_depot_faults',
 ] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 
@@ -61,6 +67,8 @@ export const ALLOWED_ARGS: Record<ToolName, readonly string[]> = {
   voltbase_site_detail: ['id'],
   voltbase_status: ['id', 'after'],
   voltbase_reliability: ['id'],
+  voltbase_depot_sessions: ['chargerRef', 'dialect', 'openOnly', 'limit', 'offset'],
+  voltbase_depot_faults: ['chargerRef', 'limit'],
 };
 
 export const searchSitesSchema = z.strictObject({
@@ -83,6 +91,19 @@ export const statusSchema = z.strictObject({
 
 export const reliabilitySchema = z.strictObject({
   id: z.string().min(1).max(128),
+});
+
+export const depotSessionsSchema = z.strictObject({
+  chargerRef: z.string().max(64).optional(),
+  dialect: z.enum(['ocpp1.6', 'ocpp2.0.1']).optional(),
+  openOnly: z.boolean().default(false),
+  limit: z.number().int().min(1).max(100).default(20),
+  offset: z.number().int().min(0).max(100_000).default(0),
+});
+
+export const depotFaultsSchema = z.strictObject({
+  chargerRef: z.string().max(64).optional(),
+  limit: z.number().int().min(1).max(100).default(20),
 });
 
 const text = (payload: unknown): CallToolResult['content'] => [
@@ -133,6 +154,12 @@ const STATUS_DESC =
 const RELIABILITY_DESC =
   'Per-site reliability rollups (S6 change journal + trailing-24h uptime, stale-labelled). ' +
   'Served on both transports from the fixture index + prebuilt cut; exhausted budget answers typed UPSTREAM_FAILED with the cut.';
+const DEPOT_SESSIONS_DESC =
+  'Depot charging sessions (simulated CC0 corpus): chargerRef filter, dialect ocpp1.6/ocpp2.0.1, ' +
+  'openOnly (open sessions), limit/offset pagination. Rows carry energy Wh, quality flags, and attribution.';
+const DEPOT_FAULTS_DESC =
+  'Depot fault sessions (rows with data-quality flags other than openSession) plus per-charger ' +
+  'fault counts, most-faulted first. Same filters minus dialect/openOnly.';
 
 export const buildMcpServer = (deps: McpDeps): McpServer => {
   const server = new McpServer({ name: 'voltbase', version: '0.1.0' });
@@ -277,6 +304,71 @@ export const buildMcpServer = (deps: McpDeps): McpServer => {
       }
       return ok({
         data: { ...answer.data, source: site.source, attribution: site.attribution },
+        byokConfigured: byokConfigured(deps),
+      });
+    },
+  );
+
+  server.registerTool(
+    'voltbase_depot_sessions',
+    {
+      title: 'Depot sessions',
+      description: DEPOT_SESSIONS_DESC,
+      inputSchema: depotSessionsSchema as unknown as AnySchema,
+    },
+    async (args: unknown) => {
+      const a = args as unknown as z.infer<typeof depotSessionsSchema>;
+      const violation = strictArgs(a as Readonly<Record<string, unknown>>, ALLOWED_ARGS.voltbase_depot_sessions);
+      if (violation !== null) return err(violation);
+      if (!(deps.depotBuild ?? DEPOT_BUILD).ok) return err({ code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' });
+      if (a.chargerRef !== undefined && (a.chargerRef.trim() === '' || a.chargerRef.length > 64)) {
+        return invalid('chargerRef must be a non-empty string of at most 64 chars');
+      }
+      const filtered = filterSessions(SERVABLE_SESSIONS, {
+        ...(a.chargerRef === undefined ? {} : { chargerRef: a.chargerRef }),
+        ...(a.dialect === undefined ? {} : { dialect: a.dialect }),
+        openOnly: a.openOnly,
+      });
+      const data = filtered.slice(a.offset, a.offset + a.limit);
+      const info = staleInfo(DEPOT_RETRIEVED_AT, deps.now());
+      return ok({
+        data,
+        page: { limit: a.limit, offset: a.offset, total: filtered.length },
+        attribution: resultAttribution(data),
+        meta: { rejectedCount: DEPOT_REJECTED_COUNT },
+        stale: info.stale,
+        ...(info.reason === undefined ? {} : { staleReason: info.reason }),
+        byokConfigured: byokConfigured(deps),
+      });
+    },
+  );
+
+  server.registerTool(
+    'voltbase_depot_faults',
+    {
+      title: 'Depot faults',
+      description: DEPOT_FAULTS_DESC,
+      inputSchema: depotFaultsSchema as unknown as AnySchema,
+    },
+    async (args: unknown) => {
+      const a = args as unknown as z.infer<typeof depotFaultsSchema>;
+      const violation = strictArgs(a as Readonly<Record<string, unknown>>, ALLOWED_ARGS.voltbase_depot_faults);
+      if (violation !== null) return err(violation);
+      if (!(deps.depotBuild ?? DEPOT_BUILD).ok) return err({ code: 'UPSTREAM_FAILED', message: 'depot corpus is empty' });
+      if (a.chargerRef !== undefined && (a.chargerRef.trim() === '' || a.chargerRef.length > 64)) {
+        return invalid('chargerRef must be a non-empty string of at most 64 chars');
+      }
+      const filtered = depotFaults(SERVABLE_SESSIONS, a.chargerRef);
+      const data = filtered.slice(0, a.limit);
+      const info = staleInfo(DEPOT_RETRIEVED_AT, deps.now());
+      return ok({
+        data,
+        counts: faultCountsByCharger(filtered),
+        page: { limit: a.limit, offset: 0, total: filtered.length },
+        attribution: resultAttribution(data),
+        meta: { rejectedCount: DEPOT_REJECTED_COUNT },
+        stale: info.stale,
+        ...(info.reason === undefined ? {} : { staleReason: info.reason }),
         byokConfigured: byokConfigured(deps),
       });
     },

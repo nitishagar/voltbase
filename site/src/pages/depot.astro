@@ -1,0 +1,49 @@
+---
+// voltbase depot (ChargeLens demo snapshot — simulated CC0 OCPP corpus).
+// Source mirror; canonical static emit is site/build.mjs.
+const title = 'Depot — voltbase';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="ChargeLens depot demo: simulated OCPP charging sessions, fault rows, and per-charger counts over a checked-in CC0 corpus." />
+    <link rel="stylesheet" href="/voltbase/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="/voltbase/favicon.svg" />
+    <base href="/voltbase/" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head"><div class="wrap">
+      <a class="brand" href="/voltbase/"><span class="brand-glyph" aria-hidden="true">❯</span> voltbase</a>
+      <nav aria-label="Docs"><ul>
+        <li><a href="/voltbase/">Home</a></li>
+        <li><a href="/voltbase/quickstart/">Quickstart</a></li>
+        <li><a href="/voltbase/api-reference/">API reference</a></li>
+        <li><a href="/voltbase/mcp-onboarding/">MCP onboarding</a></li>
+        <li><a href="/voltbase/providers/">Providers</a></li>
+        <li><a href="/voltbase/depot/" aria-current="page">Depot</a></li>
+        <li><a href="/voltbase/attributions/">Attributions</a></li>
+        <li><a href="/voltbase/legal/">Legal</a></li>
+      </ul></nav>
+    </div></header>
+    <div class="wrap"><main id="main" data-pagefind-body>
+      <h1>Depot</h1>
+      <p class="lede">ChargeLens depot demo: four simulated OCPP sessions (1.6J full and hostile flows plus 2.0.1 events) served by the same tools on MCP, REST, and CLI. Snapshot rendered at build time; live rows via <code>GET /api/v1/depot/sessions</code>.</p>
+      <h2>Sessions</h2>
+      <table><thead><tr><th>Session</th><th>Charger</th><th>Dialect</th><th>Energy</th><th>Flags</th></tr></thead><tbody>
+        <tr><td><code>OCPP:cp-16a:1008</code></td><td>cp-16a</td><td>ocpp1.6</td><td>1500 Wh</td><td>—</td></tr>
+        <tr><td><code>OCPP:cp-16b:1009</code></td><td>cp-16b</td><td>ocpp1.6</td><td>1500 Wh</td><td>replayedStop, orphanReading</td></tr>
+        <tr><td><code>OCPP:cp-16b:1010</code></td><td>cp-16b</td><td>ocpp1.6</td><td>unknown (rolled register)</td><td>energyUnknown</td></tr>
+        <tr><td><code>OCPP:cp-201:station-tx-1</code></td><td>cp-201</td><td>ocpp2.0.1</td><td>1500 Wh</td><td>—</td></tr>
+      </tbody></table>
+      <h2>Faults</h2>
+      <p>Fault rows carry data-quality flags other than <code>openSession</code>. Per-charger counts, most-faulted first: <strong>cp-16b: 2 faults</strong>.</p>
+      <h2>Method</h2>
+      <p>Traces are recorded through a real OCPP client/server pair with schema validation, then normalised deterministically: canonical Wh integers, composite dedupe keys, counted orphans and late readings, and driver identifiers dropped at ingest. Corpus: <code>packages/sessions/corpus/</code>. Tools: <code>voltbase_depot_sessions</code>, <code>voltbase_depot_faults</code>.</p>
+    </main></div>
+    <footer class="site-foot"><div class="wrap"><p>voltbase docs — local preview. Legal pages are <strong>DRAFT</strong>; see <a href="/voltbase/legal/">Legal</a> (includes the DPDP Act 2023 note for India data).</p></div></footer>
+  </body>
+</html>
