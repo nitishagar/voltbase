@@ -6,7 +6,7 @@ venture-client track: paid first pilot, contact-to-pilot in ~3 weeks).
 ## Links
 - Repo: https://github.com/nitishagar/voltbase (Apache-2.0, public)
 - Depot dashboard: https://nitishagar.github.io/voltbase/depot/ (live)
-- Depot API: `GET /api/v1/depot/sessions`, `GET /api/v1/depot/faults` on the voltbase Worker (live on next `wrangler deploy` — owner step, CI green; verified locally via app.request + CLI + eval)
+- Depot API: `GET /api/v1/depot/sessions`, `GET /api/v1/depot/faults` on the voltbase Worker (live, verified 2026-11-24: 4 sessions, 2 faults, 6 MCP tools)
 - MCP: `POST /mcp` tools `voltbase_depot_sessions`, `voltbase_depot_faults` (same Worker as above)
 
 ## What it is (one paragraph for the form)
